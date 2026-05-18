@@ -16,11 +16,17 @@ export const foodsTable = pgTable("foods", {
   caloriesPer100g: integer(),
 });
 
+export type Food = typeof foodsTable.$inferSelect
+export type FoodInsert = typeof foodsTable.$inferInsert
+
 export const recipesTable = pgTable("recipes", {
   id: integer().primaryKey().generatedAlwaysAsIdentity(),
   name: text().notNull(),
   creatorId: integer("author_id").references(() => usersTable.id),
 });
+
+export type Recipe = typeof recipesTable.$inferSelect
+export type RecipeInsert = typeof recipesTable.$inferInsert
 
 // Amount of a food item in a specific recipe, i.e. ingredients
 export const foodsToRecipesTable = pgTable(
@@ -38,6 +44,9 @@ export const mealsTable = pgTable("meals", {
   name: text().notNull(),
   creatorId: integer("author_id").references(() => usersTable.id),
 });
+
+export type Meal = typeof mealsTable.$inferSelect
+export type MealInsert = typeof mealsTable.$inferInsert
 
 // Amount of a recipe in a specific meal
 export const recipesToMealsTable = pgTable(
