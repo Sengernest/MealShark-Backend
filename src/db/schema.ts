@@ -1,3 +1,4 @@
+import { relations } from "drizzle-orm";
 import { timestamp } from "drizzle-orm/pg-core";
 import { pgTable, integer, text, primaryKey } from "drizzle-orm/pg-core";
 
@@ -25,6 +26,10 @@ export const recipesTable = pgTable("recipes", {
   creatorId: integer("author_id").references(() => usersTable.id),
 });
 
+export const recipesRelations = relations(recipesTable, ({many}) => ({
+  ingredients: many(foodsToRecipesTable)
+}))
+
 export type RecipeSelect = typeof recipesTable.$inferSelect;
 export type RecipeInsert = typeof recipesTable.$inferInsert;
 
@@ -44,8 +49,6 @@ export type Ingredient = Omit<
   "recipeId"
 >;
 export type Recipe = RecipeSelect & { ingredients: Ingredient[] };
-
-const relations = 
 
 export const mealsTable = pgTable("meals", {
   id: integer().primaryKey().generatedAlwaysAsIdentity(),

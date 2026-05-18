@@ -34,15 +34,15 @@ export async function createRecipe(
   });
 }
 
-export async function getRecipes(): Promise<Recipe[]> {
-  return await db.select().from(recipesTable);
-}
+// export async function getRecipes(): Promise<Recipe[]> {
+//   return await db.select().from(recipesTable);
+// }
 
-export async function getRecipe(recipeId: number): Promise<Recipe> {
-  return (
-    await db.select().from(recipesTable).where(eq(recipesTable.id, recipeId))
-  )[0];
-}
+// export async function getRecipe(recipeId: number): Promise<Recipe> {
+//   return (
+//     await db.select().from(recipesTable).where(eq(recipesTable.id, recipeId))
+//   )[0];
+// }
 
 export async function updateRecipe(recipeId: number, newRecipe: RecipeInsert) {
   return await db
