@@ -28,8 +28,8 @@ export const recipesRelations = relations(recipesTable, ({ many }) => ({
 export const foodsToRecipesTable = pgTable(
   "foods_to_recipes",
   {
-    foodId: integer("food_id").references(() => foodsTable.id),
-    recipeId: integer("recipe_id").references(() => recipesTable.id),
+    foodId: integer("food_id").references(() => foodsTable.id).notNull(),
+    recipeId: integer("recipe_id").references(() => recipesTable.id).notNull(),
     amountInGrams: integer().notNull(),
   },
   (table) => [primaryKey({ columns: [table.foodId, table.recipeId] })],

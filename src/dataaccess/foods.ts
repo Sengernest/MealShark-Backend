@@ -1,8 +1,8 @@
 import db from "../db/db";
 import {  foodsTable } from "../db/schema";
-import { FoodInsert, Food } from "../types";
+import { FoodInput, Food } from "../types";
 
-export async function createFood(food: FoodInsert) {
+export async function createFood(food: FoodInput) {
   return await db.insert(foodsTable).values(food)
 }
 

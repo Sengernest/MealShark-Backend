@@ -1,9 +1,9 @@
 import { eq } from "drizzle-orm";
 import db from "../db/db";
 import { usersTable } from "../db/schema";
-import { UserInsert, User } from "../types";
+import { UserInput, User } from "../types";
 
-export async function createUser(user: UserInsert) {
+export async function createUser(user: UserInput) {
   return await db.insert(usersTable).values(user);
 }
 

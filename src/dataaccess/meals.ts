@@ -1,9 +1,9 @@
 import { eq } from "drizzle-orm";
 import db from "../db/db";
 import { mealsTable } from "../db/schema";
-import { MealInsert, Meal } from "../types";
+import { MealInput, Meal } from "../types";
 
-export async function createMeal(meal: MealInsert) {
+export async function createMeal(meal: MealInput) {
   return await db.insert(mealsTable).values(meal);
 }
 
@@ -17,7 +17,7 @@ export async function getMeal(mealId: number): Promise<Meal> {
   )[0];
 }
 
-export async function updateMeal(mealId: number, newMeal: MealInsert) {
+export async function updateMeal(mealId: number, newMeal: MealInput) {
   return await db
     .update(mealsTable)
     .set(newMeal)
