@@ -4,6 +4,8 @@ import {
   recipesTable,
   foodsToRecipesTable,
   mealsTable,
+  recipesToMealsTable,
+  foodsToMealsTable,
 } from "./db/schema";
 
 export type User = typeof usersTable.$inferSelect;
@@ -12,16 +14,29 @@ export type UserInput = typeof usersTable.$inferInsert;
 export type Food = typeof foodsTable.$inferSelect;
 export type FoodInput = typeof foodsTable.$inferInsert;
 
-export type Ingredient = {
-  amountInGrams: number;
-  food: Food | null;
+export type RecipeFood = typeof foodsToRecipesTable.$inferSelect & {
+  food: Food;
 };
 
-export type Recipe = typeof recipesTable.$inferSelect & {
-  ingredients: Ingredient[];
+export type Recipe = typeof recipesTable.$inferSelect
+export type RecipeWithIngredients = Recipe & {
+  ingredients: RecipeFood[];
 };
 
-export type CreateRecipePayload = {
+export type MealRecipe = typeof recipesToMealsTable.$inferSelect & {
+  recipe: Recipe;
+};
+
+export type MealFood = typeof foodsToMealsTable.$inferSelect & {
+  food: Food;
+};
+
+export type Meal = typeof mealsTable.$inferSelect & {
+  recipeItems: MealRecipe[];
+  foodItems: MealFood[];
+};
+
+export type RecipeCreateRequest = {
   recipeData: typeof recipesTable.$inferInsert;
   ingredients: {
     amountInGrams: number;
@@ -29,9 +44,6 @@ export type CreateRecipePayload = {
   }[];
 };
 
-export type UpdateRecipePayload = CreateRecipePayload & {
+export type RecipeUpdateRequest = RecipeCreateRequest & {
   recipeId: number;
 };
-
-export type Meal = typeof mealsTable.$inferSelect;
-export type MealInput = typeof mealsTable.$inferInsert;

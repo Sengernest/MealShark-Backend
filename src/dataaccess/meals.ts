@@ -1,7 +1,7 @@
 import { eq } from "drizzle-orm";
 import db from "../db/db";
 import { mealsTable } from "../db/schema";
-import { MealInput, Meal } from "../types";
+import { Meal } from "../types";
 
 export async function getMeals(): Promise<Meal[]> {
   return await db.query.mealsTable.findMany({
@@ -42,16 +42,16 @@ export async function getMeal(mealId: number): Promise<Meal> {
   return meal;
 }
 
-export async function createMeal(meal: MealInput) {
-  return await db.insert(mealsTable).values(meal);
-}
+// export async function createMeal(meal: ) {
+//   return await db.insert(mealsTable).values(meal);
+// }
 
-export async function updateMeal(mealId: number, newMeal: MealInput) {
-  return await db
-    .update(mealsTable)
-    .set(newMeal)
-    .where(eq(mealsTable.id, mealId));
-}
+// export async function updateMeal(mealId: number, newMeal: ) {
+//   return await db
+//     .update(mealsTable)
+//     .set(newMeal)
+//     .where(eq(mealsTable.id, mealId));
+// }
 
 export async function deleteMeal(mealId: number) {
   return await db.delete(mealsTable).where(eq(mealsTable.id, mealId));
