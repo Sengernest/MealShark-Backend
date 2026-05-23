@@ -15,6 +15,20 @@ export async function getRecipes(): Promise<Recipe[]> {
   });
 }
 
+// Get recipes created by a given user
+export async function getUserRecipes(userId: number): Promise<Recipe[]> {
+  return await db.query.recipesTable.findMany({
+    where: eq(recipesTable.creatorId, userId),
+    with: {
+      ingredients: {
+        with: {
+          food: true,
+        },
+      },
+    },
+  });
+}
+
 export async function getRecipe(recipeId: number): Promise<Recipe> {
   const recipe = await db.query.recipesTable.findFirst({
     where: eq(recipesTable.id, recipeId),

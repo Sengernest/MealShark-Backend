@@ -4,6 +4,7 @@ import {
   handleDeleteRecipe,
   handleGetRecipe,
   handleGetRecipes,
+  handleGetUserRecipes,
   handleUpdateRecipe,
 } from "./handlers/recipes";
 import {
@@ -22,6 +23,7 @@ app.get("/", (req: Request, res: Response) => {
 });
 
 app.get("/recipes", handleGetRecipes);
+app.get("/users/:userId/recipes", handleGetUserRecipes);
 app.get("/recipes/:id", handleGetRecipe);
 app.post("/recipes", handleCreateRecipe);
 app.put("/recipes/:id", handleUpdateRecipe);

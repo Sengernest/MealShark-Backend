@@ -4,11 +4,19 @@ import {
   deleteRecipe,
   getRecipe,
   getRecipes,
+  getUserRecipes,
   updateRecipe,
 } from "../dataaccess/recipes";
 
 export async function handleGetRecipes(req: Request, res: Response) {
   const recipes = await getRecipes();
+  res.json(recipes);
+}
+
+export async function handleGetUserRecipes(req: Request, res: Response) {
+  const userId = Number(req.params.userId);
+  // TODO: Parameter validation
+  const recipes = await getUserRecipes(userId);
   res.json(recipes);
 }
 
