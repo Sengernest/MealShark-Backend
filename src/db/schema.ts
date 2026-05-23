@@ -23,6 +23,7 @@ export const foodsTable = pgTable("foods", {
 
   unit: foodUnitsEnum().notNull(), // g or ml
   defaultServingSize: numeric("default_serving_size", { mode: "number" }), // amount in g or ml
+  defaultServingDescription: text(), // e.g. 1 cup, 1 piece
 
   // Nutrition per 100g / 100ml
   calories: numeric({ mode: "number" }).notNull(),
