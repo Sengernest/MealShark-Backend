@@ -36,18 +36,6 @@ export type Meal = typeof mealsTable.$inferSelect & {
   foodItems: MealFood[];
 };
 
-export type RecipeCreateRequest = {
-  recipeData: typeof recipesTable.$inferInsert;
-  ingredients: {
-    amountInGrams: number;
-    foodId: number;
-  }[];
-};
-
-export type RecipeUpdateRequest = RecipeCreateRequest & {
-  recipeId: number;
-};
-
 export type MealCreateRequest = {
   mealData: typeof mealsTable.$inferInsert;
   recipeItems: {

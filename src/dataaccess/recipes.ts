@@ -1,7 +1,8 @@
 import { eq } from "drizzle-orm";
 import db from "../db/db";
 import { foodsToRecipesTable, recipesTable } from "../db/schema";
-import { RecipeCreateRequest, Recipe, RecipeUpdateRequest } from "../types";
+import { Recipe } from "../types";
+import { CreateRecipeSchema, UpdateRecipeSchema } from "../api/schemas/recipes";
 
 export async function getRecipes(): Promise<Recipe[]> {
   return await db.query.recipesTable.findMany({
@@ -47,17 +48,20 @@ export async function getRecipe(recipeId: number): Promise<Recipe> {
 }
 
 export async function createRecipe(
-  recipeRequest: RecipeCreateRequest,
+  recipe: CreateRecipeSchema,
 ): Promise<Recipe> {
   return await db.transaction(async (tx) => {
     const [newRecipe] = await tx
       .insert(recipesTable)
-      .values(recipeRequest.recipeData)
+      .values({
+        name: recipe.name,
+        creatorId: recipe.creatorId,
+      })
       .returning();
     await tx
       .insert(foodsToRecipesTable)
       .values(
-        recipeRequest.ingredients.map((ingredient) => ({
+        recipe.ingredients.map((ingredient) => ({
           ...ingredient,
           recipeId: newRecipe.id,
         })),
@@ -68,27 +72,30 @@ export async function createRecipe(
 }
 
 export async function updateRecipe(
-  recipeRequest: RecipeUpdateRequest,
+  recipe: UpdateRecipeSchema,
 ): Promise<Recipe> {
   return await db.transaction(async (tx) => {
     await tx
       .update(recipesTable)
-      .set(recipeRequest.recipeData)
-      .where(eq(recipesTable.id, recipeRequest.recipeId));
+      .set({
+        name: recipe.name,
+        creatorId: recipe.creatorId,
+      })
+      .where(eq(recipesTable.id, recipe.recipeId));
 
     // Delete all existing ingredients
     await tx
       .delete(foodsToRecipesTable)
-      .where(eq(foodsToRecipesTable.recipeId, recipeRequest.recipeId));
+      .where(eq(foodsToRecipesTable.recipeId, recipe.recipeId));
     // Replace with updated ingredients
     await tx.insert(foodsToRecipesTable).values(
-      recipeRequest.ingredients.map((ingredient) => ({
+      recipe.ingredients.map((ingredient) => ({
         ...ingredient,
-        recipeId: recipeRequest.recipeId,
+        recipeId: recipe.recipeId,
       })),
     );
 
-    return getRecipe(recipeRequest.recipeId);
+    return getRecipe(recipe.recipeId);
   });
 }
 

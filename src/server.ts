@@ -14,6 +14,8 @@ import {
   handleUpdateMeal,
   handleDeleteMeal,
 } from "./handlers/meals";
+import { validateBody } from "./api/validation";
+import { createRecipeSchema, updateRecipeSchema } from "./api/schemas/recipes";
 
 const app = express();
 app.use(json());
@@ -25,8 +27,8 @@ app.get("/", (req: Request, res: Response) => {
 app.get("/recipes", handleGetRecipes);
 app.get("/users/:userId/recipes", handleGetUserRecipes);
 app.get("/recipes/:id", handleGetRecipe);
-app.post("/recipes", handleCreateRecipe);
-app.put("/recipes/:id", handleUpdateRecipe);
+app.post("/recipes", validateBody(createRecipeSchema), handleCreateRecipe);
+app.put("/recipes/:id", validateBody(updateRecipeSchema), handleUpdateRecipe);
 app.delete("/recipes/:id", handleDeleteRecipe);
 
 app.get("/meals", handleGetMeals);

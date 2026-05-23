@@ -29,13 +29,11 @@ export async function handleGetRecipe(req: Request, res: Response) {
 
 export async function handleCreateRecipe(req: Request, res: Response) {
   const recipe = await createRecipe(req.body);
-  // TODO: Parameter validation
   res.json(recipe);
 }
 
 export async function handleUpdateRecipe(req: Request, res: Response) {
   const updatedRecipe = await updateRecipe(req.body);
-  // TODO: Parameter validation
   res.json(updatedRecipe);
 }
 
