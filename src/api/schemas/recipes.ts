@@ -1,4 +1,4 @@
-import z from "zod";
+import z, { ZodAny } from "zod";
 
 export const createRecipeSchema = z.object({
   name: z.string(),

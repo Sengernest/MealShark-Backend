@@ -14,16 +14,14 @@ export async function handleGetRecipes(req: Request, res: Response) {
 }
 
 export async function handleGetUserRecipes(req: Request, res: Response) {
-  const userId = Number(req.params.userId);
-  // TODO: Parameter validation
+  const userId = Number(req.params.id);
   const recipes = await getUserRecipes(userId);
   res.json(recipes);
 }
 
 export async function handleGetRecipe(req: Request, res: Response) {
-  const recipeId = req.params.id;
-  // TODO: Parameter validation
-  const recipe = await getRecipe(Number(recipeId));
+  const recipeId = Number(req.params.id);
+  const recipe = await getRecipe(recipeId);
   res.json(recipe);
 }
 
@@ -38,7 +36,7 @@ export async function handleUpdateRecipe(req: Request, res: Response) {
 }
 
 export async function handleDeleteRecipe(req: Request, res: Response) {
-  const recipeId = req.params.id;
-  await deleteRecipe(Number(recipeId));
+  const recipeId = Number(req.params.id);
+  await deleteRecipe(recipeId);
   res.json({ message: `Deleted recipe: ${recipeId}` });
 }

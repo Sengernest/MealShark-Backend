@@ -14,7 +14,7 @@ import {
   handleUpdateMeal,
   handleDeleteMeal,
 } from "./handlers/meals";
-import { validateBody } from "./api/validation";
+import { bodyValidator, idValidator } from "./api/validation";
 import { createRecipeSchema, updateRecipeSchema } from "./api/schemas/recipes";
 
 const app = express();
@@ -25,11 +25,16 @@ app.get("/", (req: Request, res: Response) => {
 });
 
 app.get("/recipes", handleGetRecipes);
-app.get("/users/:userId/recipes", handleGetUserRecipes);
-app.get("/recipes/:id", handleGetRecipe);
-app.post("/recipes", validateBody(createRecipeSchema), handleCreateRecipe);
-app.put("/recipes/:id", validateBody(updateRecipeSchema), handleUpdateRecipe);
-app.delete("/recipes/:id", handleDeleteRecipe);
+app.get("/users/:id/recipes", idValidator(), handleGetUserRecipes);
+app.get("/recipes/:id", idValidator(), handleGetRecipe);
+app.post("/recipes", bodyValidator(createRecipeSchema), handleCreateRecipe);
+app.put(
+  "/recipes/:id",
+  idValidator(),
+  bodyValidator(updateRecipeSchema),
+  handleUpdateRecipe,
+);
+app.delete("/recipes/:id", idValidator(), handleDeleteRecipe);
 
 app.get("/meals", handleGetMeals);
 app.get("/meals/:id", handleGetMeal);
