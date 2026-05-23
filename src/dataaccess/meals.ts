@@ -5,7 +5,8 @@ import {
   mealsTable,
   recipesToMealsTable,
 } from "../db/schema";
-import { Meal, MealCreateRequest, MealUpdateRequest } from "../types";
+import { Meal } from "../types";
+import { CreateMealSchema, UpdateMealSchema } from "../api/schemas/meals";
 
 export async function getMeals(): Promise<Meal[]> {
   return await db.query.mealsTable.findMany({
@@ -46,23 +47,26 @@ export async function getMeal(mealId: number): Promise<Meal> {
   return meal;
 }
 
-export async function createMeal(mealRequest: MealCreateRequest) {
+export async function createMeal(meal: CreateMealSchema) {
   return await db.transaction(async (tx) => {
     const [newMeal] = await tx
       .insert(mealsTable)
-      .values(mealRequest.mealData)
+      .values({
+        name: meal.name,
+        creatorId: meal.creatorId,
+      })
       .returning();
-    if (mealRequest.recipeItems.length > 0) {
+    if (meal.recipeItems.length > 0) {
       await tx.insert(recipesToMealsTable).values(
-        mealRequest.recipeItems.map((recipeItem) => ({
+        meal.recipeItems.map((recipeItem) => ({
           ...recipeItem,
           mealId: newMeal.id,
         })),
       );
     }
-    if (mealRequest.foodItems.length > 0) {
+    if (meal.foodItems.length > 0) {
       await tx.insert(foodsToMealsTable).values(
-        mealRequest.foodItems.map((foodItem) => ({
+        meal.foodItems.map((foodItem) => ({
           ...foodItem,
           mealId: newMeal.id,
         })),
@@ -72,44 +76,45 @@ export async function createMeal(mealRequest: MealCreateRequest) {
   });
 }
 
-export async function updateMeal(
-  mealRequest: MealUpdateRequest,
-) {
+export async function updateMeal(meal: UpdateMealSchema) {
   return await db.transaction(async (tx) => {
     await tx
       .update(mealsTable)
-      .set(mealRequest.mealData)
-      .where(eq(mealsTable.id, mealRequest.mealId));
+      .set({
+        name: meal.name,
+        creatorId: meal.creatorId,
+      })
+      .where(eq(mealsTable.id, meal.mealId));
 
     // Delete all existing recipe items in the meal
     await tx
       .delete(recipesToMealsTable)
-      .where(eq(recipesToMealsTable.mealId, mealRequest.mealId));
+      .where(eq(recipesToMealsTable.mealId, meal.mealId));
     // Delete all existing food items in the meal
     await tx
       .delete(foodsToMealsTable)
-      .where(eq(foodsToMealsTable.mealId, mealRequest.mealId));
+      .where(eq(foodsToMealsTable.mealId, meal.mealId));
 
     // Replace with updated recipe items
-    if (mealRequest.recipeItems.length > 0) {
+    if (meal.recipeItems.length > 0) {
       await tx.insert(recipesToMealsTable).values(
-        mealRequest.recipeItems.map((recipeItem) => ({
+        meal.recipeItems.map((recipeItem) => ({
           ...recipeItem,
-          mealId: mealRequest.mealId,
+          mealId: meal.mealId,
         })),
       );
     }
     // Replace with updated meal items
-    if (mealRequest.foodItems.length > 0) {
+    if (meal.foodItems.length > 0) {
       await tx.insert(foodsToMealsTable).values(
-        mealRequest.foodItems.map((foodItem) => ({
+        meal.foodItems.map((foodItem) => ({
           ...foodItem,
-          mealId: mealRequest.mealId,
+          mealId: meal.mealId,
         })),
       );
     }
 
-    return getMeal(mealRequest.mealId);
+    return getMeal(meal.mealId);
   });
 }
 

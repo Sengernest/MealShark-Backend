@@ -1,26 +1,19 @@
-import z, { ZodAny } from "zod";
+import z from "zod";
+import { createMealSchema } from "./meals";
 
 export const createRecipeSchema = z.object({
   name: z.string(),
-  creatorId: z.int(),
+  creatorId: z.int().positive(),
   ingredients: z.array(
     z.object({
-      foodId: z.int(),
+      foodId: z.int().positive(),
       amountInGrams: z.number().positive(),
     }),
   ),
 });
 
-export const updateRecipeSchema = z.object({
-  recipeId: z.int(),
-  name: z.string(),
-  creatorId: z.int(),
-  ingredients: z.array(
-    z.object({
-      foodId: z.int(),
-      amountInGrams: z.number().positive(),
-    }),
-  ),
+export const updateRecipeSchema = createMealSchema.extend({
+  recipeId: z.int().positive(),
 });
 
 export type CreateRecipeSchema = z.infer<typeof createRecipeSchema>;

@@ -13,26 +13,23 @@ export async function handleGetMeals(req: Request, res: Response) {
 }
 
 export async function handleGetMeal(req: Request, res: Response) {
-  const mealId = req.params.id;
-  // TODO: Parameter validation
-  const meal = await getMeal(Number(mealId));
+  const mealId = Number(req.params.id);
+  const meal = await getMeal(mealId);
   res.json(meal);
 }
 
 export async function handleCreateMeal(req: Request, res: Response) {
   const meal = await createMeal(req.body);
-  // TODO: Parameter validation
   res.json(meal);
 }
 
 export async function handleUpdateMeal(req: Request, res: Response) {
   const updatedMeal = await updateMeal(req.body);
-  // TODO: Parameter validation
   res.json(updatedMeal);
 }
 
 export async function handleDeleteMeal(req: Request, res: Response) {
-  const mealId = req.params.id;
-  await deleteMeal(Number(mealId));
+  const mealId = Number(req.params.id);
+  await deleteMeal(mealId);
   res.json({ message: `Deleted meal: ${mealId}` });
 }
