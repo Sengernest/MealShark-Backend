@@ -13,6 +13,7 @@ import {
   handleCreateMeal,
   handleUpdateMeal,
   handleDeleteMeal,
+  handleGetUserMeals,
 } from "./handlers/meals";
 import { bodyValidator, idValidator } from "./api/validation";
 import { createRecipeSchema, updateRecipeSchema } from "./api/schemas/recipes";
@@ -38,6 +39,7 @@ app.put(
 app.delete("/recipes/:id", idValidator(), handleDeleteRecipe);
 
 app.get("/meals", handleGetMeals);
+app.get("/users/:id/meals", idValidator(), handleGetUserMeals);
 app.get("/meals/:id", idValidator(), handleGetMeal);
 app.post("/meals", bodyValidator(createMealSchema), handleCreateMeal);
 app.put(

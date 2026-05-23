@@ -4,11 +4,18 @@ import {
   deleteMeal,
   getMeal,
   getMeals,
+  getUserMeals,
   updateMeal,
 } from "../dataaccess/meals";
 
 export async function handleGetMeals(req: Request, res: Response) {
   const meals = await getMeals();
+  res.json(meals);
+}
+
+export async function handleGetUserMeals(req: Request, res: Response) {
+  const userId = Number(req.params.id);
+  const meals = await getUserMeals(userId);
   res.json(meals);
 }
 
