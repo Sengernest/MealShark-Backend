@@ -15,16 +15,23 @@ import {
   handleDeleteMeal,
   handleGetUserMeals,
 } from "./handlers/meals";
+import { handleSignup, handleLogin } from "./handlers/auth";
 import { bodyValidator, idValidator } from "./middleware/validation";
 import { createRecipeSchema, updateRecipeSchema } from "./dto/recipes";
 import { createMealSchema, updateMealSchema } from "./dto/meals";
 
 const app = express();
+const cookieParser = require("cookie-parser");
+
 app.use(json());
+app.use(cookieParser());
 
 app.get("/", (req: Request, res: Response) => {
   res.send("Hello world!");
 });
+
+app.post('/signup', handleSignup);
+app.get('/login', handleLogin);
 
 app.get("/recipes", handleGetRecipes);
 app.get("/users/:id/recipes", idValidator(), handleGetUserRecipes);
