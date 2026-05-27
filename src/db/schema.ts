@@ -13,6 +13,7 @@ export const usersTable = pgTable("users", {
   id: integer().primaryKey().generatedAlwaysAsIdentity(),
   name: text().notNull(),
   email: text().notNull().unique(),
+  password: text().notNull(),
 });
 
 export const foodUnitsEnum = pgEnum("units", ["g", "ml"]);
