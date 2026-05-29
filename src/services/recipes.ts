@@ -1,26 +1,47 @@
 import { recipesRepository } from "../dataaccess/recipes";
 import { CreateRecipeSchema, UpdateRecipeSchema } from "../dto/recipes";
-import { Recipe } from "../types";
+import { Recipe, RecipeWithCalories } from "../types";
 
-async function getRecipes(): Promise<Recipe[]> {
-  return recipesRepository.getRecipes();
+async function getRecipes(): Promise<RecipeWithCalories[]> {
+  const recipes = await recipesRepository.getRecipes();
+  return recipes.map(withCalories);
 }
 
 // Get recipes created by a given user
-async function getUserRecipes(userId: number): Promise<Recipe[]> {
-  return recipesRepository.getUserRecipes(userId);
+async function getUserRecipes(userId: number): Promise<RecipeWithCalories[]> {
+  const recipes = await recipesRepository.getUserRecipes(userId);
+  return recipes.map(withCalories);
 }
 
-async function getRecipe(recipeId: number): Promise<Recipe> {
-  return recipesRepository.getRecipe(recipeId);
+// Get recipe with computed calories
+async function getRecipe(recipeId: number): Promise<RecipeWithCalories> {
+  const recipe = await recipesRepository.getRecipe(recipeId);
+  return withCalories(recipe);
 }
 
-async function createRecipe(recipe: CreateRecipeSchema): Promise<Recipe> {
-  return recipesRepository.createRecipe(recipe);
+function withCalories(recipe: Recipe): RecipeWithCalories {
+  return {
+    ...recipe,
+    calories: recipe.ingredients.reduce(
+      (acc, ingredient) =>
+        acc + (ingredient.amount / 100) * ingredient.food.calories,
+      0,
+    ),
+  };
 }
 
-async function updateRecipe(recipe: UpdateRecipeSchema): Promise<Recipe> {
-  return recipesRepository.updateRecipe(recipe);
+async function createRecipe(
+  recipe: CreateRecipeSchema,
+): Promise<RecipeWithCalories> {
+  const newRecipe = await recipesRepository.createRecipe(recipe);
+  return withCalories(newRecipe);
+}
+
+async function updateRecipe(
+  recipe: UpdateRecipeSchema,
+): Promise<RecipeWithCalories> {
+  const updatedRecipe = await recipesRepository.updateRecipe(recipe);
+  return withCalories(updatedRecipe);
 }
 
 async function deleteRecipe(recipeId: number) {

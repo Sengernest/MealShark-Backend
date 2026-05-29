@@ -47,9 +47,7 @@ async function getRecipe(recipeId: number): Promise<Recipe> {
   return recipe;
 }
 
-async function createRecipe(
-  recipe: CreateRecipeSchema,
-): Promise<Recipe> {
+async function createRecipe(recipe: CreateRecipeSchema): Promise<Recipe> {
   return await db.transaction(async (tx) => {
     const [newRecipe] = await tx
       .insert(recipesTable)
@@ -71,9 +69,7 @@ async function createRecipe(
   });
 }
 
-async function updateRecipe(
-  recipe: UpdateRecipeSchema,
-): Promise<Recipe> {
+async function updateRecipe(recipe: UpdateRecipeSchema): Promise<Recipe> {
   return await db.transaction(async (tx) => {
     await tx
       .update(recipesTable)
