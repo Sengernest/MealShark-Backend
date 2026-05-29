@@ -22,8 +22,17 @@ export type Recipe = typeof recipesTable.$inferSelect & {
   ingredients: RecipeFood[];
 };
 
-export type RecipeWithCalories = Recipe & {
+export type Nutrition = {
   calories: number;
+  macros: {
+    carbs: number;
+    protein: number;
+    fat: number;
+  };
+};
+
+export type RecipeWithNutrition = Recipe & {
+  nutrition: Nutrition;
 };
 
 export type MealRecipe = typeof recipesToMealsTable.$inferSelect & {

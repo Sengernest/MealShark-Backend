@@ -28,9 +28,9 @@ export const foodsTable = pgTable("foods", {
 
   // Nutrition per 100g / 100ml
   calories: numeric({ mode: "number" }).notNull(),
-  protein: numeric({ mode: "number" }),
-  fat: numeric({ mode: "number" }),
-  carb: numeric({ mode: "number" }),
+  protein: numeric({ mode: "number" }).notNull(),
+  fat: numeric({ mode: "number" }).notNull(),
+  carb: numeric({ mode: "number" }).notNull(),
 });
 
 export const recipesTable = pgTable("recipes", {
