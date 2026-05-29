@@ -4,7 +4,7 @@ import { foodsToRecipesTable, recipesTable } from "../db/schema";
 import { Recipe } from "../types";
 import { CreateRecipeSchema, UpdateRecipeSchema } from "../dto/recipes";
 
-export async function getRecipes(): Promise<Recipe[]> {
+async function getRecipes(): Promise<Recipe[]> {
   return await db.query.recipesTable.findMany({
     with: {
       ingredients: {
@@ -17,7 +17,7 @@ export async function getRecipes(): Promise<Recipe[]> {
 }
 
 // Get recipes created by a given user
-export async function getUserRecipes(userId: number): Promise<Recipe[]> {
+async function getUserRecipes(userId: number): Promise<Recipe[]> {
   return await db.query.recipesTable.findMany({
     where: eq(recipesTable.creatorId, userId),
     with: {
@@ -30,7 +30,7 @@ export async function getUserRecipes(userId: number): Promise<Recipe[]> {
   });
 }
 
-export async function getRecipe(recipeId: number): Promise<Recipe> {
+async function getRecipe(recipeId: number): Promise<Recipe> {
   const recipe = await db.query.recipesTable.findFirst({
     where: eq(recipesTable.id, recipeId),
     with: {
@@ -47,7 +47,7 @@ export async function getRecipe(recipeId: number): Promise<Recipe> {
   return recipe;
 }
 
-export async function createRecipe(
+async function createRecipe(
   recipe: CreateRecipeSchema,
 ): Promise<Recipe> {
   return await db.transaction(async (tx) => {
@@ -71,7 +71,7 @@ export async function createRecipe(
   });
 }
 
-export async function updateRecipe(
+async function updateRecipe(
   recipe: UpdateRecipeSchema,
 ): Promise<Recipe> {
   return await db.transaction(async (tx) => {
@@ -99,6 +99,15 @@ export async function updateRecipe(
   });
 }
 
-export async function deleteRecipe(recipeId: number) {
+async function deleteRecipe(recipeId: number) {
   return await db.delete(recipesTable).where(eq(recipesTable.id, recipeId));
 }
+
+export const recipesRepository = {
+  getRecipes,
+  getUserRecipes,
+  getRecipe,
+  createRecipe,
+  updateRecipe,
+  deleteRecipe,
+};
