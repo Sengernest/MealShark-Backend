@@ -5,6 +5,7 @@ const sampleUsers = [
   {
     name: "David Laid",
     email: "davidlaid@gymshark.com",
+    password: "password123",
   }
 ]
 

@@ -15,7 +15,7 @@ import {
   handleDeleteMeal,
   handleGetUserMeals,
 } from "./handlers/meals";
-import { handleSignup, handleLogin } from "./handlers/auth";
+import { handleSignup, handleLogin, handleLogout } from "./handlers/auth";
 import { bodyValidator, idValidator } from "./middleware/validation";
 import { createRecipeSchema, updateRecipeSchema } from "./dto/recipes";
 import { createMealSchema, updateMealSchema } from "./dto/meals";
@@ -31,7 +31,8 @@ app.get("/", (req: Request, res: Response) => {
 });
 
 app.post('/signup', handleSignup);
-app.get('/login', handleLogin);
+app.post('/login', handleLogin);
+app.post('/logout', handleLogout);
 
 app.get("/recipes", handleGetRecipes);
 app.get("/users/:id/recipes", idValidator(), handleGetUserRecipes);
