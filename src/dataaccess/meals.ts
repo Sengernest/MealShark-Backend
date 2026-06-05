@@ -13,7 +13,15 @@ export async function getMeals(): Promise<Meal[]> {
     with: {
       recipeItems: {
         with: {
-          recipe: true,
+          recipe: {
+            with: {
+              ingredients: {
+                with: {
+                  food: true,
+                },
+              },
+            },
+          },
         },
       },
       foodItems: {
@@ -32,7 +40,15 @@ export async function getUserMeals(userId: number): Promise<Meal[]> {
     with: {
       recipeItems: {
         with: {
-          recipe: true,
+          recipe: {
+            with: {
+              ingredients: {
+                with: {
+                  food: true,
+                },
+              },
+            },
+          },
         },
       },
       foodItems: {
@@ -50,7 +66,15 @@ export async function getMeal(mealId: number): Promise<Meal> {
     with: {
       recipeItems: {
         with: {
-          recipe: true,
+          recipe: {
+            with: {
+              ingredients: {
+                with: {
+                  food: true,
+                },
+              },
+            },
+          },
         },
       },
       foodItems: {
