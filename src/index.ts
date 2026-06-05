@@ -1,6 +1,6 @@
-import { seedDb } from "./db/seed";
 import app from "./server";
-import "dotenv/config";
+import dotenv from "dotenv";
+dotenv.config();
 
 // Express server
 const PORT = process.env.PORT || 3000;
