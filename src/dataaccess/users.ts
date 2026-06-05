@@ -5,17 +5,25 @@ import { UserInput, User } from "../types";
 import bcrypt from "bcrypt";
 
 export async function createUser(user: UserInput) {
+  console.log("createUser called with:", user);
   const { name, email, password } = user;
-  const hashedPassword = await bcrypt.hash(password, 10);
-  const [newUser] = await db
-    .insert(usersTable)
-    .values({
-      name,
-      email,
-      password: hashedPassword,
-    })
-    .returning();
-  return newUser;
+  try {
+    const hashedPassword = await bcrypt.hash(password, 10);
+    const result = await db
+      .insert(usersTable)
+      .values({
+        name,
+        email,
+        password: hashedPassword,
+      })
+      .returning();
+    console.log("db insert result:", result);
+    const [newUser] = result;
+    return newUser;
+  } catch (err) {
+    console.error("createUser ERROR:", err);
+    throw err;
+  }
 }
 
 export async function getUsers(): Promise<User[]> {
@@ -34,4 +42,8 @@ export async function getUserByEmail(email: string): Promise<User | null> {
     .from(usersTable)
     .where(eq(usersTable.email, email));
   return user.length > 0 ? user[0] : null;
+} 
+
+export async function deleteUser(userId: number) {
+  await db.delete(usersTable).where(eq(usersTable.id, userId));
 } 
