@@ -31,3 +31,15 @@ export function idValidator(idKey = "id") {
     [idKey]: z.int().positive()
   }))
 }
+
+// Validates request query
+export function queryValidator(schema: ZodObject) {
+  return (req: Request, res: Response, next: NextFunction) => {
+    const result = schema.safeParse(req.query);
+    if (!result.success) {
+      return res.status(400).json(result.error);
+    }
+    req.query = result.data as any;
+    next();
+  };
+}

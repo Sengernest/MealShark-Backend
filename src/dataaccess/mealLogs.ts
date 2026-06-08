@@ -9,7 +9,7 @@ import { CreateMealLogSchema, UpdateMealLogSchema } from "../dto/mealLogs";
 import { MealLog } from "../types";
 
 // Get meal logs by a user on a given date
-async function getMealLogs(userId: number, logDate: Date): Promise<MealLog[]> {
+async function getMealLogs(userId: number, logDate: string): Promise<MealLog[]> {
   return await db.query.mealLogsTable.findMany({
     where: and(
       eq(mealLogsTable.userId, userId),

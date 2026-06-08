@@ -2,7 +2,7 @@ import { mealLogsRepository } from "../dataaccess/mealLogs";
 import { CreateMealLogSchema, UpdateMealLogSchema } from "../dto/mealLogs";
 import { MealLog } from "../types";
 
-async function getMealLogs(userId: number, logDate: Date): Promise<MealLog[]> {
+async function getMealLogs(userId: number, logDate: string): Promise<MealLog[]> {
   return mealLogsRepository.getMealLogs(userId, logDate);
 }
 
@@ -18,7 +18,7 @@ async function deleteMealLog(id: number) {
   return mealLogsRepository.deleteMealLog(id);
 }
 
-export const recipesService = {
+export const mealLogsService = {
   getMealLogs,
   createMealLog,
   updateMealLog,

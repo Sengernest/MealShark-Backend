@@ -1,4 +1,5 @@
 import { relations } from "drizzle-orm";
+import { date } from "drizzle-orm/pg-core";
 import { pgEnum } from "drizzle-orm/pg-core";
 import { timestamp } from "drizzle-orm/pg-core";
 import {
@@ -135,7 +136,7 @@ export const mealLogsTable = pgTable("meal_logs", {
   userId: integer("user_id")
     .references(() => usersTable.id)
     .notNull(),
-  logDate: timestamp(),
+  logDate: date({mode: 'string'}),
   slot: integer().notNull(), // e.g. Meal 1, Meal 2
 });
 
