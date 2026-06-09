@@ -1,7 +1,7 @@
 import { mealsRepository } from "../dataaccess/meals";
-import { CreateMealSchema, UpdateMealSchema } from "../dto/meals";
-import { Nutrition, Meal, MealFood, MealWithNutrition, MealLog } from "../types";
-import { sumMealNutrition, sumNutrition } from "./nutrition";
+import { CreateMealPlanSchema, UpdateMealPlanSchema } from "../dto/mealPlans";
+import { Meal, MealWithNutrition } from "../types";
+import { sumMealNutrition } from "./nutrition";
 
 function withNutrition(meal: Meal): MealWithNutrition {
   return {
@@ -27,12 +27,16 @@ async function getMeal(mealId: number): Promise<MealWithNutrition> {
   return withNutrition(meal);
 }
 
-async function createMeal(meal: CreateMealSchema): Promise<MealWithNutrition> {
+async function createMeal(
+  meal: CreateMealPlanSchema,
+): Promise<MealWithNutrition> {
   const newMeal = await mealsRepository.createMeal(meal);
   return withNutrition(newMeal);
 }
 
-async function updateMeal(meal: UpdateMealSchema): Promise<MealWithNutrition> {
+async function updateMeal(
+  meal: UpdateMealPlanSchema,
+): Promise<MealWithNutrition> {
   const updatedMeal = await mealsRepository.updateMeal(meal);
   return withNutrition(updatedMeal);
 }

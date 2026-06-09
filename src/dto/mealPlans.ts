@@ -1,6 +1,6 @@
 import z from "zod";
 
-export const createMealSchema = z.object({
+export const createMealPlanSchema = z.object({
   name: z.string(),
   creatorId: z.int().positive(),
   recipeItems: z.array(
@@ -17,9 +17,9 @@ export const createMealSchema = z.object({
   ),
 });
 
-export const updateMealSchema = createMealSchema.extend({
-  mealId: z.int().positive()
-})
+export const updateMealPlanSchema = createMealPlanSchema.extend({
+  mealId: z.int().positive(),
+});
 
-export type CreateMealSchema = z.infer<typeof createMealSchema>
-export type UpdateMealSchema = z.infer<typeof updateMealSchema>
+export type CreateMealPlanSchema = z.infer<typeof createMealPlanSchema>;
+export type UpdateMealPlanSchema = z.infer<typeof updateMealPlanSchema>;

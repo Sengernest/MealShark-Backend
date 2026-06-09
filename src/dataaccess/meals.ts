@@ -6,7 +6,7 @@ import {
   recipesToMealsTable,
 } from "../db/schema";
 import { Meal } from "../types";
-import { CreateMealSchema, UpdateMealSchema } from "../dto/meals";
+import { CreateMealPlanSchema, UpdateMealPlanSchema } from "../dto/mealPlans";
 
 async function getMeals(): Promise<Meal[]> {
   return await db.query.mealsTable.findMany({
@@ -90,7 +90,7 @@ async function getMeal(mealId: number): Promise<Meal> {
   return meal;
 }
 
-async function createMeal(meal: CreateMealSchema) {
+async function createMeal(meal: CreateMealPlanSchema) {
   return await db.transaction(async (tx) => {
     const [newMeal] = await tx
       .insert(mealsTable)
@@ -119,7 +119,7 @@ async function createMeal(meal: CreateMealSchema) {
   });
 }
 
-async function updateMeal(meal: UpdateMealSchema) {
+async function updateMeal(meal: UpdateMealPlanSchema) {
   return await db.transaction(async (tx) => {
     await tx
       .update(mealsTable)
