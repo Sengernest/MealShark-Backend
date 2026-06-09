@@ -1,5 +1,6 @@
 import { FoodItem, Meal, MealLog, Nutrition } from "../types";
 
+// Sums up the nutrition content in a list of foods, such as in a recipe or meal log
 export function sumNutrition(foodItems: FoodItem[]): Nutrition {
   return foodItems.reduce(
     (acc, foodItem) => {
