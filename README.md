@@ -5,23 +5,31 @@
 ```
 npm install
 ```
-2. Run the dev server
-```
-npm run dev
-```
-3. Start a Postgres instance using docker compose
-```
-docker compose up -d
-```
-** NOTE:  Ensure you do not already have a local Postgres instance running on port 5432 **  
-4. Set environment variables e.g.
+2. Set environment variables e.g.
 ```
 PORT=3000
 DATABASE_URL=postgres://postgres:mypassword@localhost:5432/postgres
 ```
+3. Start a Postgres instance using docker compose  
+> NOTE:  Ensure you do not already have a local Postgres instance running on port 5432 
+```
+docker compose up -d
+```
+4. Apply schema to database
+```
+npx drizzle-kit push
+```    
+5. Import food data from json file
+```
+npm run import
+```
+6. Run the dev server
+```
+npm run dev
+```
 
 ## Database
-### Applying changes to database
+### Updating database schema
 Whenever a change is made to the schema, run the following command to update the actual database.
 ```
 npx drizzle-kit push
