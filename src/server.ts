@@ -36,6 +36,7 @@ import {
   handleGetUserMealPlans,
   handleUpdateMealPlan,
 } from "./handlers/mealPlans";
+import { handleGetFoods, handleSearchFoods } from "./handlers/foods";
 
 const app = express();
 const cookieParser = require("cookie-parser");
@@ -51,6 +52,10 @@ app.get("/", (req: Request, res: Response) => {
 app.post("/signup", bodyValidator(signupSchema), handleSignup);
 app.post("/login", bodyValidator(loginSchema), handleLogin);
 app.post("/logout", handleLogout);
+
+// Foods
+app.get("/foods", handleGetFoods)
+app.get("/foods/search", handleSearchFoods)
 
 // Recipes
 app.get("/recipes", handleGetRecipes);
