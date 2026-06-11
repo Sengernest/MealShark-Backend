@@ -20,18 +20,21 @@ export async function handleGetMealPlan(req: Request, res: Response) {
 }
 
 export async function handleCreateMealPlan(req: Request, res: Response) {
-  const mealPlan = await mealPlansService.createMealPlan(req.body);
+  const userId = req.user?.id!
+  const mealPlan = await mealPlansService.createMealPlan(req.body, userId);
   res.json(mealPlan);
 }
 
 export async function handleUpdateMealPlan(req: Request, res: Response) {
   const mealPlanId = Number(req.params.id);
-  const mealPlan = await mealPlansService.updateMealPlan(req.body);
+  const userId = req.user?.id!;
+  const mealPlan = await mealPlansService.updateMealPlan(req.body, userId);
   res.json(mealPlan);
 }
 
 export async function handleDeleteMealPlan(req: Request, res: Response) {
   const mealPlanId = Number(req.params.id);
-  await mealPlansService.deleteMealPlan(mealPlanId);
+  const userId = req.user?.id!;
+  await mealPlansService.deleteMealPlan(mealPlanId, userId);
   res.json({ message: `Deleted meal plan: ${mealPlanId}` });
 }

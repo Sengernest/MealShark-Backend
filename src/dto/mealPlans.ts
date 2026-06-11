@@ -18,7 +18,6 @@ export const createMealSchema = z.object({
 
 export const createMealPlanSchema = z.object({
   name: z.string(),
-  creatorId: z.int().positive(),
   meals: z.array(createMealSchema),
 });
 

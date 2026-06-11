@@ -107,13 +107,14 @@ async function getMealPlan(mealPlanId: number): Promise<MealPlan> {
 
 async function createMealPlan(
   mealPlan: CreateMealPlanSchema,
+  creatorId: number,
 ): Promise<MealPlan> {
   return await db.transaction(async (tx) => {
     const [newMealPlan] = await tx
       .insert(mealPlansTable)
       .values({
         name: mealPlan.name,
-        creatorId: mealPlan.creatorId,
+        creatorId: creatorId,
       })
       .returning();
 
@@ -151,10 +152,7 @@ async function updateMealPlan(mealPlan: UpdateMealPlanSchema) {
   return await db.transaction(async (tx) => {
     const [updatedPlan] = await tx
       .update(mealPlansTable)
-      .set({
-        name: mealPlan.name,
-        creatorId: mealPlan.creatorId,
-      })
+      .set({ name: mealPlan.name })
       .where(eq(mealPlansTable.id, mealPlan.id))
       .returning();
 
