@@ -1,10 +1,7 @@
 import { recipesRepository } from "../dataaccess/recipes";
-import { CreateRecipeSchema, UpdateRecipeSchema } from "../dto/recipes";
+import { RecipeSchema } from "../dto/recipes";
 import { NotFoundError, UnauthorizedError } from "../errors/errors";
-import {
-  Recipe,
-  RecipeWithNutrition
-} from "../types";
+import { Recipe, RecipeWithNutrition } from "../types";
 import { sumNutrition } from "./nutrition";
 
 function withNutrition(recipe: Recipe): RecipeWithNutrition {
@@ -32,35 +29,41 @@ async function getRecipe(recipeId: number): Promise<RecipeWithNutrition> {
 }
 
 async function createRecipe(
-  recipe: CreateRecipeSchema, userId: number
+  recipe: RecipeSchema,
+  userId: number,
 ): Promise<RecipeWithNutrition> {
   const newRecipe = await recipesRepository.createRecipe(recipe, userId);
   return withNutrition(newRecipe);
 }
 
 async function updateRecipe(
-  recipeUpdateData: UpdateRecipeSchema, userId: number
+  recipeId: number,
+  recipeUpdateData: RecipeSchema,
+  userId: number,
 ): Promise<RecipeWithNutrition> {
-  const recipe = await recipesRepository.getRecipe(recipeUpdateData.recipeId)
+  const recipe = await recipesRepository.getRecipe(recipeId);
   if (!recipe) {
-    throw new NotFoundError()
+    throw new NotFoundError();
   }
   // Ensure that the recipe can only be updated by its creator
   if (recipe.creatorId !== userId) {
-    throw new UnauthorizedError()
+    throw new UnauthorizedError();
   }
-  const updatedRecipe = await recipesRepository.updateRecipe(recipeUpdateData);
+  const updatedRecipe = await recipesRepository.updateRecipe(
+    recipeId,
+    recipeUpdateData,
+  );
   return withNutrition(updatedRecipe);
 }
 
 async function deleteRecipe(recipeId: number, userId: number) {
   const recipe = await recipesRepository.getRecipe(recipeId);
   if (!recipe) {
-    throw new NotFoundError()
+    throw new NotFoundError();
   }
   // Ensure that the recipe can only be deleted by its creator
   if (recipe.creatorId !== userId) {
-    throw new UnauthorizedError()
+    throw new UnauthorizedError();
   }
   return recipesRepository.deleteRecipe(recipeId);
 }

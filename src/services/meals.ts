@@ -1,5 +1,5 @@
 import { mealsRepository } from "../dataaccess/meals";
-import { CreateMealPlanSchema, UpdateMealPlanSchema } from "../dto/mealPlans";
+import { MealPlanSchema, UpdateMealPlanSchema } from "../dto/mealPlans";
 import { Meal, MealWithNutrition } from "../types";
 import { sumMealNutrition } from "./nutrition";
 

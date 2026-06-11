@@ -5,7 +5,7 @@ import {
   mealLogsTable,
   recipesToMealLogsTable,
 } from "../db/schema";
-import { CreateMealLogSchema, UpdateMealLogSchema } from "../dto/mealLogs";
+import { MealLogSchema } from "../dto/mealLogs";
 import { MealLog } from "../types";
 
 // Get meal logs by a user on a given date
@@ -71,7 +71,7 @@ async function getMealLog(mealLogId: number): Promise<MealLog> {
   return mealLog;
 }
 
-async function createMealLog(mealLog: CreateMealLogSchema, userId: number) {
+async function createMealLog(mealLog: MealLogSchema, userId: number) {
   return await db.transaction(async (tx) => {
     const [newMealLog] = await tx
       .insert(mealLogsTable)
@@ -102,7 +102,7 @@ async function createMealLog(mealLog: CreateMealLogSchema, userId: number) {
   });
 }
 
-async function updateMealLog(mealLog: UpdateMealLogSchema) {
+async function updateMealLog(mealLogId: number, mealLog: MealLogSchema) {
   return await db.transaction(async (tx) => {
     await tx
       .update(mealLogsTable)
@@ -111,22 +111,22 @@ async function updateMealLog(mealLog: UpdateMealLogSchema) {
         mealIndex: mealLog.mealIndex,
         mealId: mealLog.mealId,
       })
-      .where(eq(mealLogsTable.id, mealLog.mealLogId));
+      .where(eq(mealLogsTable.id, mealLogId));
 
     // Delete all existing recipe items in the meal log
     await tx
       .delete(recipesToMealLogsTable)
-      .where(eq(recipesToMealLogsTable.mealLogId, mealLog.mealLogId));
+      .where(eq(recipesToMealLogsTable.mealLogId, mealLogId));
     // Delete all existing food items in the meal log
     await tx
       .delete(foodsToMealLogsTable)
-      .where(eq(foodsToMealLogsTable.mealLogId, mealLog.mealLogId));
+      .where(eq(foodsToMealLogsTable.mealLogId, mealLogId));
 
     if (mealLog.recipeItems.length > 0) {
       await tx.insert(recipesToMealLogsTable).values(
         mealLog.recipeItems.map((recipeItem) => ({
           ...recipeItem,
-          mealLogId: mealLog.mealLogId,
+          mealLogId: mealLogId,
         })),
       );
     }
@@ -134,12 +134,12 @@ async function updateMealLog(mealLog: UpdateMealLogSchema) {
       await tx.insert(foodsToMealLogsTable).values(
         mealLog.foodItems.map((foodItem) => ({
           ...foodItem,
-          mealLogId: mealLog.mealLogId,
+          mealLogId: mealLogId,
         })),
       );
     }
 
-    return getMealLog(mealLog.mealLogId);
+    return getMealLog(mealLogId);
   });
 }
 

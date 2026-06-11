@@ -1,4 +1,15 @@
 import express, { json, Request, Response } from "express";
+import { loginSchema, signupSchema } from "./dto/auth";
+import { macroGoalsSchema } from "./dto/macroGoals";
+import { mealPlanSchema, updateMealPlanSchema } from "./dto/mealPlans";
+import { recipeSchema } from "./dto/recipes";
+import { handleLogin, handleLogout, handleSignup } from "./handlers/auth";
+import {
+  handleCreateMacroGoals,
+  handleDeleteMacroGoals,
+  handleGetMacroGoals,
+  handleUpdateMacroGoals,
+} from "./handlers/macroGoals";
 import {
   handleCreateRecipe,
   handleDeleteRecipe,
@@ -7,27 +18,17 @@ import {
   handleGetUserRecipes,
   handleUpdateRecipe,
 } from "./handlers/recipes";
-import { handleSignup, handleLogin, handleLogout } from "./handlers/auth";
-import {
-  handleCreateMacroGoals,
-  handleGetMacroGoals,
-  handleUpdateMacroGoals,
-  handleDeleteMacroGoals,
-} from "./handlers/macroGoals";
 import { requireAuth, requireUserMatch } from "./middleware/auth";
 import { bodyValidator, idValidator } from "./middleware/validation";
-import { signupSchema, loginSchema } from "./dto/auth";
-import { createRecipeSchema, updateRecipeSchema } from "./dto/recipes";
-import { createMealPlanSchema, updateMealPlanSchema } from "./dto/mealPlans";
-import { macroGoalsSchema } from "./dto/macroGoals";
 
+import { mealLogSchema } from "./dto/mealLogs";
+import { handleGetFoods, handleSearchFoods } from "./handlers/foods";
 import {
   handleCreateMealLog,
   handleDeleteMealLog,
   handleGetMealLogs,
   handleUpdateMealLog,
 } from "./handlers/mealLogs";
-import { createMealLogSchema, updateMealLogSchema } from "./dto/mealLogs";
 import {
   handleCreateMealPlan,
   handleDeleteMealPlan,
@@ -36,7 +37,6 @@ import {
   handleGetUserMealPlans,
   handleUpdateMealPlan,
 } from "./handlers/mealPlans";
-import { handleGetFoods, handleSearchFoods } from "./handlers/foods";
 import { errorHandler } from "./middleware/error";
 
 const app = express();
@@ -55,18 +55,18 @@ app.post("/login", bodyValidator(loginSchema), handleLogin);
 app.post("/logout", handleLogout);
 
 // Foods
-app.get("/foods", handleGetFoods)
-app.get("/foods/search", handleSearchFoods)
+app.get("/foods", handleGetFoods);
+app.get("/foods/search", handleSearchFoods);
 
 // Recipes
 app.get("/recipes", handleGetRecipes);
 app.get("/users/:id/recipes", idValidator(), handleGetUserRecipes);
 app.get("/recipes/:id", idValidator(), handleGetRecipe);
-app.post("/recipes", bodyValidator(createRecipeSchema), handleCreateRecipe);
+app.post("/recipes", bodyValidator(recipeSchema), handleCreateRecipe);
 app.put(
   "/recipes/:id",
   idValidator(),
-  bodyValidator(updateRecipeSchema),
+  bodyValidator(recipeSchema),
   handleUpdateRecipe,
 );
 app.delete("/recipes/:id", idValidator(), handleDeleteRecipe);
@@ -75,11 +75,7 @@ app.delete("/recipes/:id", idValidator(), handleDeleteRecipe);
 app.get("/meal-plans/samples", handleGetSampleMealPlans);
 app.get("/users/:id/meal-plans", idValidator(), handleGetUserMealPlans);
 app.get("/meal-plans/:id", idValidator(), handleGetMealPlan);
-app.post(
-  "/meal-plans",
-  bodyValidator(createMealPlanSchema),
-  handleCreateMealPlan,
-);
+app.post("/meal-plans", bodyValidator(mealPlanSchema), handleCreateMealPlan);
 app.put(
   "/meal-plans/:id",
   idValidator(),
@@ -90,11 +86,11 @@ app.delete("/meal-plans/:id", idValidator(), handleDeleteMealPlan);
 
 // Meal logs
 app.get("/users/:id/meal-logs", idValidator(), handleGetMealLogs); // ?date=
-app.post("/meal-logs", bodyValidator(createMealLogSchema), handleCreateMealLog);
+app.post("/meal-logs", bodyValidator(mealLogSchema), handleCreateMealLog);
 app.put(
   "/meal-logs/:id",
   idValidator(),
-  bodyValidator(updateMealLogSchema),
+  bodyValidator(mealLogSchema),
   handleUpdateMealLog,
 );
 app.delete("/meal-logs/:id", idValidator(), handleDeleteMealLog);
@@ -132,6 +128,6 @@ app.delete(
 );
 
 // Error handling
-app.use(errorHandler)
+app.use(errorHandler);
 
 export default app;

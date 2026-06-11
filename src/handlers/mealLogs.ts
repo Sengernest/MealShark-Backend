@@ -22,8 +22,9 @@ export async function handleCreateMealLog(req: Request, res: Response) {
 }
 
 export async function handleUpdateMealLog(req: Request, res: Response) {
+  const mealLogId = Number(req.params.id)
   const userId = Number(req.user?.id);
-  const updatedMealLog = await mealLogsService.updateMealLog(req.body, userId);
+  const updatedMealLog = await mealLogsService.updateMealLog(mealLogId, req.body, userId);
   res.json(updatedMealLog);
 }
 

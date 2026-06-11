@@ -1,6 +1,6 @@
 import z from "zod";
 
-export const createRecipeSchema = z.object({
+export const recipeSchema = z.object({
   name: z.string(),
   ingredients: z.array(
     z.object({
@@ -10,9 +10,4 @@ export const createRecipeSchema = z.object({
   ),
 });
 
-export const updateRecipeSchema = createRecipeSchema.extend({
-  recipeId: z.int().positive(),
-});
-
-export type CreateRecipeSchema = z.infer<typeof createRecipeSchema>;
-export type UpdateRecipeSchema = z.infer<typeof updateRecipeSchema>;
+export type RecipeSchema = z.infer<typeof recipeSchema>;

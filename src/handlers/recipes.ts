@@ -25,8 +25,9 @@ export async function handleCreateRecipe(req: Request, res: Response) {
 }
 
 export async function handleUpdateRecipe(req: Request, res: Response) {
+  const recipeId = Number(req.params.id)
   const userId = req.user?.id!;
-  const updatedRecipe = await recipesService.updateRecipe(req.body, userId);
+  const updatedRecipe = await recipesService.updateRecipe(recipeId, req.body, userId);
   res.json(updatedRecipe);
 }
 

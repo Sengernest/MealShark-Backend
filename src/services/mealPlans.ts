@@ -1,5 +1,5 @@
 import { mealPlansRepository } from "../dataaccess/mealPlans";
-import { CreateMealPlanSchema, UpdateMealPlanSchema } from "../dto/mealPlans";
+import { MealPlanSchema } from "../dto/mealPlans";
 import { NotFoundError, UnauthorizedError } from "../errors/errors";
 import { MealPlan, MealPlanWithNutrition, Nutrition } from "../types";
 import { sumMealNutrition } from "./nutrition";
@@ -47,13 +47,17 @@ async function getMealPlan(mealPlanId: number) {
   return withNutrition(mealPlan);
 }
 
-async function createMealPlan(schema: CreateMealPlanSchema, userId: number) {
+async function createMealPlan(schema: MealPlanSchema, userId: number) {
   const mealPlan = await mealPlansRepository.createMealPlan(schema, userId);
   return withNutrition(mealPlan);
 }
 
-async function updateMealPlan(schema: UpdateMealPlanSchema, userId: number) {
-  const mealPlan = await mealPlansRepository.getMealPlan(schema.id);
+async function updateMealPlan(
+  mealPlanId: number,
+  schema: MealPlanSchema,
+  userId: number,
+) {
+  const mealPlan = await mealPlansRepository.getMealPlan(mealPlanId);
   if (!mealPlan) {
     throw new NotFoundError();
   }
@@ -61,7 +65,10 @@ async function updateMealPlan(schema: UpdateMealPlanSchema, userId: number) {
   if (mealPlan.creatorId !== userId) {
     throw new UnauthorizedError();
   }
-  const updatedMealPlan = await mealPlansRepository.updateMealPlan(schema);
+  const updatedMealPlan = await mealPlansRepository.updateMealPlan(
+    mealPlanId,
+    schema,
+  );
   return withNutrition(updatedMealPlan);
 }
 

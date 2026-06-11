@@ -1,5 +1,5 @@
 import { mealLogsRepository } from "../dataaccess/mealLogs";
-import { CreateMealLogSchema, UpdateMealLogSchema } from "../dto/mealLogs";
+import { MealLogSchema } from "../dto/mealLogs";
 import { NotFoundError, UnauthorizedError } from "../errors/errors";
 import { MealLog, MealLogWithNutrition } from "../types";
 import { sumMealNutrition } from "./nutrition";
@@ -20,7 +20,7 @@ async function getMealLogs(
 }
 
 async function createMealLog(
-  mealLog: CreateMealLogSchema,
+  mealLog: MealLogSchema,
   userId: number,
 ): Promise<MealLogWithNutrition> {
   const newLog = await mealLogsRepository.createMealLog(mealLog, userId);
@@ -28,12 +28,11 @@ async function createMealLog(
 }
 
 async function updateMealLog(
-  mealLogUpdateData: UpdateMealLogSchema,
+  mealLogId: number,
+  mealLogUpdateData: MealLogSchema,
   userId: number,
 ): Promise<MealLogWithNutrition> {
-  const mealLog = await mealLogsRepository.getMealLog(
-    mealLogUpdateData.mealLogId,
-  );
+  const mealLog = await mealLogsRepository.getMealLog(mealLogId);
   if (!mealLog) {
     throw new NotFoundError();
   }
@@ -41,7 +40,10 @@ async function updateMealLog(
   if (mealLog.userId !== userId) {
     throw new UnauthorizedError();
   }
-  const updatedLog = await mealLogsRepository.updateMealLog(mealLogUpdateData);
+  const updatedLog = await mealLogsRepository.updateMealLog(
+    mealLogId,
+    mealLogUpdateData,
+  );
   return withNutrition(updatedLog);
 }
 

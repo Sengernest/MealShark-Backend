@@ -1,4 +1,4 @@
-import { and, eq, isNull } from "drizzle-orm";
+import { eq, isNull } from "drizzle-orm";
 import db from "../db/db";
 import {
   foodsToMealsTable,
@@ -6,7 +6,7 @@ import {
   mealsTable,
   recipesToMealsTable,
 } from "../db/schema";
-import { CreateMealPlanSchema, UpdateMealPlanSchema } from "../dto/mealPlans";
+import { MealPlanSchema } from "../dto/mealPlans";
 import { MealPlan } from "../types";
 
 async function getSampleMealPlans(): Promise<MealPlan[]> {
@@ -106,7 +106,7 @@ async function getMealPlan(mealPlanId: number): Promise<MealPlan> {
 }
 
 async function createMealPlan(
-  mealPlan: CreateMealPlanSchema,
+  mealPlan: MealPlanSchema,
   creatorId: number,
 ): Promise<MealPlan> {
   return await db.transaction(async (tx) => {
@@ -148,18 +148,18 @@ async function createMealPlan(
   });
 }
 
-async function updateMealPlan(mealPlan: UpdateMealPlanSchema) {
+async function updateMealPlan(mealPlanId: number, mealPlan: MealPlanSchema) {
   return await db.transaction(async (tx) => {
     const [updatedPlan] = await tx
       .update(mealPlansTable)
       .set({ name: mealPlan.name })
-      .where(eq(mealPlansTable.id, mealPlan.id))
+      .where(eq(mealPlansTable.id, mealPlanId))
       .returning();
 
     for (const meal of mealPlan.meals) {
       // Delete all previous meals in this meal plan
       // Meal recipes and meal foods are cascade deleted
-      await tx.delete(mealsTable).where(eq(mealsTable.mealPlanId, mealPlan.id));
+      await tx.delete(mealsTable).where(eq(mealsTable.mealPlanId, mealPlanId));
 
       // Insert updated meal
       const [newMeal] = await tx

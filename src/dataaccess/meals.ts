@@ -5,9 +5,7 @@ import {
   mealsTable,
   recipesToMealsTable,
 } from "../db/schema";
-import {
-  CreateMealSchema
-} from "../dto/mealPlans";
+import { MealSchema } from "../dto/mealPlans";
 import { Meal } from "../types";
 
 // e.g. Bulking Meal 1

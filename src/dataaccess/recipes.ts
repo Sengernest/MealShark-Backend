@@ -1,10 +1,7 @@
 import { eq } from "drizzle-orm";
 import db from "../db/db";
 import { foodsToRecipesTable, recipesTable } from "../db/schema";
-import {
-  CreateRecipeSchema,
-  UpdateRecipeSchema
-} from "../dto/recipes";
+import { RecipeSchema } from "../dto/recipes";
 import { Recipe } from "../types";
 
 async function getRecipes(): Promise<Recipe[]> {
@@ -51,7 +48,7 @@ async function getRecipe(recipeId: number): Promise<Recipe> {
 }
 
 async function createRecipe(
-  recipe: CreateRecipeSchema,
+  recipe: RecipeSchema,
   creatorId: number | undefined,
 ): Promise<Recipe> {
   return await db.transaction(async (tx) => {
@@ -72,26 +69,29 @@ async function createRecipe(
   });
 }
 
-async function updateRecipe(recipe: UpdateRecipeSchema): Promise<Recipe> {
+async function updateRecipe(
+  recipeId: number,
+  recipe: RecipeSchema,
+): Promise<Recipe> {
   return await db.transaction(async (tx) => {
     await tx
       .update(recipesTable)
       .set({ name: recipe.name })
-      .where(eq(recipesTable.id, recipe.recipeId));
+      .where(eq(recipesTable.id, recipeId));
 
     // Delete all existing ingredients
     await tx
       .delete(foodsToRecipesTable)
-      .where(eq(foodsToRecipesTable.recipeId, recipe.recipeId));
+      .where(eq(foodsToRecipesTable.recipeId, recipeId));
     // Replace with updated ingredients
     await tx.insert(foodsToRecipesTable).values(
       recipe.ingredients.map((ingredient) => ({
         ...ingredient,
-        recipeId: recipe.recipeId,
+        recipeId: recipeId,
       })),
     );
 
-    return getRecipe(recipe.recipeId);
+    return getRecipe(recipeId);
   });
 }
 

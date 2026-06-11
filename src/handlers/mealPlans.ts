@@ -20,7 +20,7 @@ export async function handleGetMealPlan(req: Request, res: Response) {
 }
 
 export async function handleCreateMealPlan(req: Request, res: Response) {
-  const userId = req.user?.id!
+  const userId = req.user?.id!;
   const mealPlan = await mealPlansService.createMealPlan(req.body, userId);
   res.json(mealPlan);
 }
@@ -28,7 +28,11 @@ export async function handleCreateMealPlan(req: Request, res: Response) {
 export async function handleUpdateMealPlan(req: Request, res: Response) {
   const mealPlanId = Number(req.params.id);
   const userId = req.user?.id!;
-  const mealPlan = await mealPlansService.updateMealPlan(req.body, userId);
+  const mealPlan = await mealPlansService.updateMealPlan(
+    mealPlanId,
+    req.body,
+    userId,
+  );
   res.json(mealPlan);
 }
 

@@ -1,6 +1,6 @@
 import z from "zod";
 
-export const createMealLogSchema = z.object({
+export const mealLogSchema = z.object({
   name: z.string(),
   logDate: z.string(),
   mealIndex: z.int().positive(),
@@ -19,12 +19,7 @@ export const createMealLogSchema = z.object({
   ),
 });
 
-export const updateMealLogSchema = createMealLogSchema.extend({
-  mealLogId: z.int().positive(),
-});
-
-export type CreateMealLogSchema = z.infer<typeof createMealLogSchema>;
-export type UpdateMealLogSchema = z.infer<typeof updateMealLogSchema>;
+export type MealLogSchema = z.infer<typeof mealLogSchema>;
 
 export const getMealLogsQuerySchema = z.object({
   logDate: z.iso.date(),
