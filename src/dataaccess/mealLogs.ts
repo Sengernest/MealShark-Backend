@@ -107,7 +107,6 @@ async function updateMealLog(mealLog: UpdateMealLogSchema) {
     await tx
       .update(mealLogsTable)
       .set({
-        userId: mealLog.userId,
         logDate: mealLog.logDate,
         mealIndex: mealLog.mealIndex,
         mealId: mealLog.mealId,
@@ -149,6 +148,7 @@ async function deleteMealLog(mealLogId: number) {
 }
 
 export const mealLogsRepository = {
+  getMealLog,
   getMealLogs,
   createMealLog,
   updateMealLog,

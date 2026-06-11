@@ -13,17 +13,20 @@ export async function handleGetMealLogs(req: Request, res: Response) {
 }
 
 export async function handleCreateMealLog(req: Request, res: Response) {
+  const userId = req.user?.id
   const mealLog = await mealLogsService.createMealLog(req.body);
   res.json(mealLog);
 }
 
 export async function handleUpdateMealLog(req: Request, res: Response) {
-  const updatedMealLog = await mealLogsService.updateMealLog(req.body);
+  const userId = req.user?.id;
+  const updatedMealLog = await mealLogsService.updateMealLog(req.body, userId);
   res.json(updatedMealLog);
 }
 
 export async function handleDeleteMealLog(req: Request, res: Response) {
   const mealLogId = Number(req.params.id);
-  await mealLogsService.deleteMealLog(mealLogId);
+  const userId = req.user?.id;
+  await mealLogsService.deleteMealLog(mealLogId, userId);
   res.json({ message: `Deleted meal log: ${mealLogId}` });
 }

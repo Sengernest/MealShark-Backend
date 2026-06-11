@@ -1,5 +1,6 @@
 import { mealLogsRepository } from "../dataaccess/mealLogs";
 import { CreateMealLogSchema, UpdateMealLogSchema } from "../dto/mealLogs";
+import { NotFoundError, UnauthorizedError } from "../errors/errors";
 import { MealLog, MealLogWithNutrition } from "../types";
 import { sumMealNutrition } from "./nutrition";
 
@@ -26,14 +27,33 @@ async function createMealLog(
 }
 
 async function updateMealLog(
-  mealLog: UpdateMealLogSchema,
+  mealLogUpdateData: UpdateMealLogSchema,
+  userId: number | undefined,
 ): Promise<MealLogWithNutrition> {
-  const updatedLog = await mealLogsRepository.updateMealLog(mealLog);
+  const mealLog = await mealLogsRepository.getMealLog(
+    mealLogUpdateData.mealLogId,
+  );
+  if (!mealLog) {
+    throw new NotFoundError();
+  }
+  // Ensure that the meal log can only be updated by the same user
+  if (mealLog.userId !== userId) {
+    throw new UnauthorizedError();
+  }
+  const updatedLog = await mealLogsRepository.updateMealLog(mealLogUpdateData);
   return withNutrition(updatedLog);
 }
 
-async function deleteMealLog(id: number) {
-  return mealLogsRepository.deleteMealLog(id);
+async function deleteMealLog(mealLogId: number, userId: number | undefined) {
+  const mealLog = await mealLogsRepository.getMealLog(mealLogId);
+  if (!mealLog) {
+    throw new NotFoundError();
+  }
+  // Ensure that the meal log can only be deleted by the same user
+  if (mealLog.userId !== userId) {
+    throw new UnauthorizedError();
+  }
+  return mealLogsRepository.deleteMealLog(mealLogId);
 }
 
 export const mealLogsService = {
