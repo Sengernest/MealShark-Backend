@@ -15,10 +15,9 @@ async function searchFood(
   return await db
     .select({
       item: foodsTable,
-      score: sql<number>`similarity(${foodsTable.name}, ${query})`,
-    })
+      score: sql<number>`similarity(${foodsTable.name}, ${query})`})
     .from(foodsTable)
-    .where(sql`${foodsTable.name} % ${query}`)
+    .where(sql`similarity(${foodsTable.name}, ${query}) > 0.1`)
     .orderBy(sql`similarity(${foodsTable.name}, ${query}) DESC`)
     .limit(limit);
 }
