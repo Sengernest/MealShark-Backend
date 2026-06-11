@@ -32,14 +32,14 @@ async function getRecipe(recipeId: number): Promise<RecipeWithNutrition> {
 }
 
 async function createRecipe(
-  recipe: CreateRecipeSchema, userId: number | undefined
+  recipe: CreateRecipeSchema, userId: number
 ): Promise<RecipeWithNutrition> {
   const newRecipe = await recipesRepository.createRecipe(recipe, userId);
   return withNutrition(newRecipe);
 }
 
 async function updateRecipe(
-  recipeUpdateData: UpdateRecipeSchema, userId: number | undefined
+  recipeUpdateData: UpdateRecipeSchema, userId: number
 ): Promise<RecipeWithNutrition> {
   const recipe = await recipesRepository.getRecipe(recipeUpdateData.recipeId)
   if (!recipe) {
@@ -53,7 +53,7 @@ async function updateRecipe(
   return withNutrition(updatedRecipe);
 }
 
-async function deleteRecipe(recipeId: number, userId: number | undefined) {
+async function deleteRecipe(recipeId: number, userId: number) {
   const recipe = await recipesRepository.getRecipe(recipeId);
   if (!recipe) {
     throw new NotFoundError()
