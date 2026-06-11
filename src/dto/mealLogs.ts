@@ -2,7 +2,6 @@ import z from "zod";
 
 export const createMealLogSchema = z.object({
   name: z.string(),
-  userId: z.int().positive(),
   logDate: z.string(),
   mealIndex: z.int().positive(),
   mealId: z.int().positive().optional(), // Not null if meal is from meal plan, null if ad-hoc meal

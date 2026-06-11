@@ -71,12 +71,12 @@ async function getMealLog(mealLogId: number): Promise<MealLog> {
   return mealLog;
 }
 
-async function createMealLog(mealLog: CreateMealLogSchema) {
+async function createMealLog(mealLog: CreateMealLogSchema, userId: number) {
   return await db.transaction(async (tx) => {
     const [newMealLog] = await tx
       .insert(mealLogsTable)
       .values({
-        userId: mealLog.userId,
+        userId,
         logDate: mealLog.logDate,
         mealIndex: mealLog.mealIndex,
         mealId: mealLog.mealId,

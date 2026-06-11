@@ -21,14 +21,15 @@ async function getMealLogs(
 
 async function createMealLog(
   mealLog: CreateMealLogSchema,
+  userId: number,
 ): Promise<MealLogWithNutrition> {
-  const newLog = await mealLogsRepository.createMealLog(mealLog);
+  const newLog = await mealLogsRepository.createMealLog(mealLog, userId);
   return withNutrition(newLog);
 }
 
 async function updateMealLog(
   mealLogUpdateData: UpdateMealLogSchema,
-  userId: number | undefined,
+  userId: number,
 ): Promise<MealLogWithNutrition> {
   const mealLog = await mealLogsRepository.getMealLog(
     mealLogUpdateData.mealLogId,
@@ -44,7 +45,7 @@ async function updateMealLog(
   return withNutrition(updatedLog);
 }
 
-async function deleteMealLog(mealLogId: number, userId: number | undefined) {
+async function deleteMealLog(mealLogId: number, userId: number) {
   const mealLog = await mealLogsRepository.getMealLog(mealLogId);
   if (!mealLog) {
     throw new NotFoundError();
