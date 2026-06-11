@@ -19,16 +19,13 @@ export async function handleGetRecipe(req: Request, res: Response) {
 }
 
 export async function handleCreateRecipe(req: Request, res: Response) {
-  const creatorId = req.user?.id;
-  const recipe = await recipesService.createRecipe({
-    ...req.body,
-    creatorId,
-  });
+  const userId = req.user?.id;
+  const recipe = await recipesService.createRecipe(req.body, userId);
   res.json(recipe);
 }
 
 export async function handleUpdateRecipe(req: Request, res: Response) {
-  const userId = req.user?.id
+  const userId = req.user?.id;
   const updatedRecipe = await recipesService.updateRecipe(req.body, userId);
   res.json(updatedRecipe);
 }

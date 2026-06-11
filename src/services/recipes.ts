@@ -1,12 +1,9 @@
 import { recipesRepository } from "../dataaccess/recipes";
-import { CreateRecipe, CreateRecipeSchema, UpdateRecipe, UpdateRecipeSchema } from "../dto/recipes";
+import { CreateRecipeSchema, UpdateRecipeSchema } from "../dto/recipes";
 import { NotFoundError, UnauthorizedError } from "../errors/errors";
 import {
-  FoodItem,
-  Nutrition,
   Recipe,
-  RecipeFood,
-  RecipeWithNutrition,
+  RecipeWithNutrition
 } from "../types";
 import { sumNutrition } from "./nutrition";
 
@@ -35,14 +32,14 @@ async function getRecipe(recipeId: number): Promise<RecipeWithNutrition> {
 }
 
 async function createRecipe(
-  recipe: CreateRecipe,
+  recipe: CreateRecipeSchema, userId: number | undefined
 ): Promise<RecipeWithNutrition> {
-  const newRecipe = await recipesRepository.createRecipe(recipe);
+  const newRecipe = await recipesRepository.createRecipe(recipe, userId);
   return withNutrition(newRecipe);
 }
 
 async function updateRecipe(
-  recipeUpdateData: UpdateRecipe, userId: number | undefined
+  recipeUpdateData: UpdateRecipeSchema, userId: number | undefined
 ): Promise<RecipeWithNutrition> {
   const recipe = await recipesRepository.getRecipe(recipeUpdateData.recipeId)
   if (!recipe) {

@@ -1,13 +1,11 @@
 import { eq } from "drizzle-orm";
 import db from "../db/db";
 import { foodsToRecipesTable, recipesTable } from "../db/schema";
-import { Recipe } from "../types";
 import {
-  CreateRecipe,
   CreateRecipeSchema,
-  UpdateRecipe,
-  UpdateRecipeSchema,
+  UpdateRecipeSchema
 } from "../dto/recipes";
+import { Recipe } from "../types";
 
 async function getRecipes(): Promise<Recipe[]> {
   return await db.query.recipesTable.findMany({
@@ -52,14 +50,14 @@ async function getRecipe(recipeId: number): Promise<Recipe> {
   return recipe;
 }
 
-async function createRecipe(recipe: CreateRecipe): Promise<Recipe> {
+async function createRecipe(
+  recipe: CreateRecipeSchema,
+  creatorId: number | undefined,
+): Promise<Recipe> {
   return await db.transaction(async (tx) => {
     const [newRecipe] = await tx
       .insert(recipesTable)
-      .values({
-        name: recipe.name,
-        creatorId: recipe.creatorId,
-      })
+      .values({ name: recipe.name, creatorId })
       .returning();
     await tx
       .insert(foodsToRecipesTable)
@@ -74,7 +72,7 @@ async function createRecipe(recipe: CreateRecipe): Promise<Recipe> {
   });
 }
 
-async function updateRecipe(recipe: UpdateRecipe): Promise<Recipe> {
+async function updateRecipe(recipe: UpdateRecipeSchema): Promise<Recipe> {
   return await db.transaction(async (tx) => {
     await tx
       .update(recipesTable)
