@@ -16,14 +16,14 @@ async function main() {
       const calories = nutrients.find(
         (nutrient: any) => nutrient.nutrient.id == 2047,
       )?.amount ?? 0;
-      const carbs = nutrients.find(
-        (nutrient: any) => nutrient.nutrient.name == 1003,
+      const protein = nutrients.find(
+        (nutrient: any) => nutrient.nutrient.id == 1003,
       )?.amount ?? 0;
       const fat = nutrients.find(
-        (nutrient: any) => nutrient.nutrient.name == 1004,
+        (nutrient: any) => nutrient.nutrient.id == 1004,
       )?.amount ?? 0;
-      const protein = nutrients.find(
-        (nutrient: any) => nutrient.nutrient.name == 1005,
+      const carbs = nutrients.find(
+        (nutrient: any) => nutrient.nutrient.id == 1005,
       )?.amount ?? 0;
 
       return {
