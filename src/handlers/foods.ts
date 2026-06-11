@@ -9,7 +9,7 @@ export async function handleGetFoods(req: Request, res: Response) {
 
 const searchFoodsQuerySchema = z.object({
   q: z.string(),
-  limit: z.int().positive(),
+  limit: z.coerce.number().int().positive().default(20),
 });
 
 export async function handleSearchFoods(req: Request, res: Response) {
