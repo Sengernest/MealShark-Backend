@@ -48,6 +48,7 @@ async function updateRecipe(
   if (!recipe) {
     throw new NotFoundError()
   }
+  // Ensure that the recipe can only be updated by its creator
   if (recipe.creatorId !== userId) {
     throw new UnauthorizedError()
   }
@@ -60,6 +61,7 @@ async function deleteRecipe(recipeId: number, userId: number | undefined) {
   if (!recipe) {
     throw new NotFoundError()
   }
+  // Ensure that the recipe can only be deleted by its creator
   if (recipe.creatorId !== userId) {
     throw new UnauthorizedError()
   }

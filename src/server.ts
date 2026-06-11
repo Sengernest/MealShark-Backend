@@ -37,6 +37,7 @@ import {
   handleUpdateMealPlan,
 } from "./handlers/mealPlans";
 import { handleGetFoods, handleSearchFoods } from "./handlers/foods";
+import { errorHandler } from "./middleware/error";
 
 const app = express();
 const cookieParser = require("cookie-parser");
@@ -129,5 +130,8 @@ app.delete(
   requireUserMatch,
   handleDeleteMacroGoals,
 );
+
+// Error handling
+app.use(errorHandler)
 
 export default app;
