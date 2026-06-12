@@ -23,8 +23,14 @@ async function getUserRecipes(userId: number): Promise<RecipeWithNutrition[]> {
 }
 
 // Get recipe with computed calories
-async function getRecipe(recipeId: number): Promise<RecipeWithNutrition> {
+async function getRecipe(recipeId: number, userId: number): Promise<RecipeWithNutrition> {
   const recipe = await recipesRepository.getRecipe(recipeId);
+  if (!recipe) {
+    throw new NotFoundError()
+  }
+  if (recipe.creatorId !== userId) {
+    throw new UnauthorizedError()
+  }
   return withNutrition(recipe);
 }
 
@@ -33,6 +39,9 @@ async function createRecipe(
   userId: number,
 ): Promise<RecipeWithNutrition> {
   const newRecipe = await recipesRepository.createRecipe(recipe, userId);
+  if (!newRecipe) {
+    throw new NotFoundError()
+  }
   return withNutrition(newRecipe);
 }
 
@@ -53,6 +62,9 @@ async function updateRecipe(
     recipeId,
     recipeUpdateData,
   );
+  if (!updatedRecipe) {
+    throw new NotFoundError()
+  }
   return withNutrition(updatedRecipe);
 }
 

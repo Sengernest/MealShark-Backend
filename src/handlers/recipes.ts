@@ -13,8 +13,9 @@ export async function handleGetUserRecipes(req: Request, res: Response) {
 }
 
 export async function handleGetRecipe(req: Request, res: Response) {
+  const userId = req.user?.id!
   const recipeId = Number(req.params.id);
-  const recipe = await recipesService.getRecipe(recipeId);
+  const recipe = await recipesService.getRecipe(recipeId, userId);
   res.json(recipe);
 }
 

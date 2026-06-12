@@ -30,8 +30,8 @@ async function getUserRecipes(userId: number): Promise<Recipe[]> {
   });
 }
 
-async function getRecipe(recipeId: number): Promise<Recipe> {
-  const recipe = await db.query.recipesTable.findFirst({
+async function getRecipe(recipeId: number): Promise<Recipe | undefined> {
+  return await db.query.recipesTable.findFirst({
     where: eq(recipesTable.id, recipeId),
     with: {
       ingredients: {
@@ -41,16 +41,12 @@ async function getRecipe(recipeId: number): Promise<Recipe> {
       },
     },
   });
-  if (!recipe) {
-    throw new Error("Recipe not found");
-  }
-  return recipe;
 }
 
 async function createRecipe(
   recipe: RecipeSchema,
   creatorId: number | undefined,
-): Promise<Recipe> {
+): Promise<Recipe | undefined> {
   return await db.transaction(async (tx) => {
     const [newRecipe] = await tx
       .insert(recipesTable)
@@ -72,7 +68,7 @@ async function createRecipe(
 async function updateRecipe(
   recipeId: number,
   recipe: RecipeSchema,
-): Promise<Recipe> {
+): Promise<Recipe | undefined> {
   return await db.transaction(async (tx) => {
     await tx
       .update(recipesTable)
