@@ -71,8 +71,8 @@ async function getUserMealPlans(userId: number): Promise<MealPlan[]> {
   return mealPlans;
 }
 
-async function getMealPlan(mealPlanId: number): Promise<MealPlan> {
-  const mealPlan = await db.query.mealPlansTable.findFirst({
+async function getMealPlan(mealPlanId: number): Promise<MealPlan | undefined> {
+  return db.query.mealPlansTable.findFirst({
     where: eq(mealPlansTable.id, mealPlanId),
     with: {
       meals: {
@@ -99,16 +99,12 @@ async function getMealPlan(mealPlanId: number): Promise<MealPlan> {
       },
     },
   });
-  if (!mealPlan) {
-    throw new Error("Meal plan not found");
-  }
-  return mealPlan;
 }
 
 async function createMealPlan(
   mealPlan: MealPlanSchema,
   creatorId: number,
-): Promise<MealPlan> {
+): Promise<MealPlan | undefined> {
   return await db.transaction(async (tx) => {
     const [newMealPlan] = await tx
       .insert(mealPlansTable)
@@ -148,7 +144,7 @@ async function createMealPlan(
   });
 }
 
-async function updateMealPlan(mealPlanId: number, mealPlan: MealPlanSchema) {
+async function updateMealPlan(mealPlanId: number, mealPlan: MealPlanSchema): Promise<MealPlan | undefined> {
   return await db.transaction(async (tx) => {
     const [updatedPlan] = await tx
       .update(mealPlansTable)

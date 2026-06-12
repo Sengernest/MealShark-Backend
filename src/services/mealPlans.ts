@@ -44,11 +44,17 @@ async function getUserMealPlans(userId: number) {
 
 async function getMealPlan(mealPlanId: number) {
   const mealPlan = await mealPlansRepository.getMealPlan(mealPlanId);
+  if (!mealPlan) {
+    throw new NotFoundError()
+  }
   return withNutrition(mealPlan);
 }
 
 async function createMealPlan(schema: MealPlanSchema, userId: number) {
   const mealPlan = await mealPlansRepository.createMealPlan(schema, userId);
+  if (!mealPlan) {
+    throw new NotFoundError();
+  }
   return withNutrition(mealPlan);
 }
 
@@ -69,6 +75,9 @@ async function updateMealPlan(
     mealPlanId,
     schema,
   );
+  if (!updatedMealPlan) {
+    throw new NotFoundError();
+  }
   return withNutrition(updatedMealPlan);
 }
 
