@@ -41,8 +41,8 @@ async function getMealLogs(
   });
 }
 
-async function getMealLog(mealLogId: number): Promise<MealLog> {
-  const mealLog = await db.query.mealLogsTable.findFirst({
+async function getMealLog(mealLogId: number): Promise<MealLog | undefined> {
+  return db.query.mealLogsTable.findFirst({
     where: eq(mealLogsTable.id, mealLogId),
     with: {
       recipeItems: {
@@ -65,13 +65,9 @@ async function getMealLog(mealLogId: number): Promise<MealLog> {
       },
     },
   });
-  if (!mealLog) {
-    throw new Error("Meal log not found");
-  }
-  return mealLog;
 }
 
-async function createMealLog(mealLog: MealLogSchema, userId: number) {
+async function createMealLog(mealLog: MealLogSchema, userId: number): Promise<MealLog | undefined> {
   return await db.transaction(async (tx) => {
     const [newMealLog] = await tx
       .insert(mealLogsTable)
@@ -102,7 +98,7 @@ async function createMealLog(mealLog: MealLogSchema, userId: number) {
   });
 }
 
-async function updateMealLog(mealLogId: number, mealLog: MealLogSchema) {
+async function updateMealLog(mealLogId: number, mealLog: MealLogSchema): Promise<MealLog | undefined> {
   return await db.transaction(async (tx) => {
     await tx
       .update(mealLogsTable)

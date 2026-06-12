@@ -24,6 +24,9 @@ async function createMealLog(
   userId: number,
 ): Promise<MealLogWithNutrition> {
   const newLog = await mealLogsRepository.createMealLog(mealLog, userId);
+  if (!newLog) {
+    throw new NotFoundError();
+  }
   return withNutrition(newLog);
 }
 
@@ -44,6 +47,9 @@ async function updateMealLog(
     mealLogId,
     mealLogUpdateData,
   );
+  if (!updatedLog) {
+    throw new NotFoundError();
+  }
   return withNutrition(updatedLog);
 }
 
