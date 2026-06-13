@@ -8,7 +8,7 @@ export async function handleGetSampleMealPlans(req: Request, res: Response) {
 
 // Get meal plans created by the given user
 export async function handleGetUserMealPlans(req: Request, res: Response) {
-  const userId = Number(req.params.id);
+  const userId = req.user?.id!;
   const mealPlans = await mealPlansService.getUserMealPlans(userId);
   res.json(mealPlans);
 }

@@ -7,13 +7,13 @@ export async function handleGetRecipes(req: Request, res: Response) {
 }
 
 export async function handleGetUserRecipes(req: Request, res: Response) {
-  const userId = Number(req.params.id);
+  const userId = req.user?.id!;
   const recipes = await recipesService.getUserRecipes(userId);
   res.json(recipes);
 }
 
 export async function handleGetRecipe(req: Request, res: Response) {
-  const userId = req.user?.id!
+  const userId = req.user?.id!;
   const recipeId = Number(req.params.id);
   const recipe = await recipesService.getRecipe(recipeId, userId);
   res.json(recipe);
