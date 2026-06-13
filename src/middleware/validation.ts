@@ -1,12 +1,13 @@
 import { NextFunction, Request, Response } from "express";
 import z, { ZodObject } from "zod";
+import { ValidationError } from "../errors/errors";
 
 // Validates request body
 export function bodyValidator(schema: ZodObject) {
   return (req: Request, res: Response, next: NextFunction) => {
     const result = schema.safeParse(req.body);
     if (!result.success) {
-      return res.status(400).json(result.error);
+      throw new ValidationError(result.error.issues)
     }
     req.body = result.data;
     next();
