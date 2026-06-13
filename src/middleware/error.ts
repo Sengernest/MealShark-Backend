@@ -15,5 +15,5 @@ export function errorHandler(
     return res.status(403).json({ error: "Unauthorized" });
   }
 
-  return res.status(500).json({ error: "Internal server error" });
+  return res.status(500).json({ error: "Internal server error", message: err });
 }

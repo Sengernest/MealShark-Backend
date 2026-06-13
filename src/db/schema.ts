@@ -43,7 +43,7 @@ export const foodsToRecipesTable = pgTable(
       .references(() => foodsTable.id)
       .notNull(),
     recipeId: integer("recipe_id")
-      .references(() => recipesTable.id)
+      .references(() => recipesTable.id, {onDelete: "cascade"})
       .notNull(),
     amount: numeric({ mode: "number" }).notNull(),
   },
