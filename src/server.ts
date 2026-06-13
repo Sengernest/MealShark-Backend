@@ -26,7 +26,7 @@ import { handleGetFoods, handleSearchFoods } from "./handlers/foods";
 import {
   handleCreateMealLog,
   handleDeleteMealLog,
-  handleGetMealLogs,
+  handleGetDailyMealSummary,
   handleUpdateMealLog,
 } from "./handlers/mealLogs";
 import {
@@ -97,7 +97,7 @@ app.put(
 app.delete("/meal-plans/:id", requireAuth, idValidator(), handleDeleteMealPlan);
 
 // Meal logs
-app.get("/me/meal-logs", requireAuth, handleGetMealLogs); // ?date=
+app.get("/me/meal-logs/daily-summary", requireAuth, handleGetDailyMealSummary); // ?date=
 app.post(
   "/meal-logs",
   requireAuth,

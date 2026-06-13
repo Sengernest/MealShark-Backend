@@ -94,6 +94,13 @@ export type MealLogWithNutrition = MealLog & {
   nutrition: Nutrition;
 };
 
+export type MealItem = Meal | MealLog
+
+export type MealSummary = {
+  meals: MealLogWithNutrition[]
+  nutrition: Nutrition
+}
+
 export type MacroGoals = typeof macroGoalsTable.$inferSelect;
 
 export type MacroGoalsInputWithMacros = {

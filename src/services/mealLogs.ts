@@ -1,13 +1,17 @@
 import { mealLogsRepository } from "../dataaccess/mealLogs";
 import { MealLogSchema } from "../dto/mealLogs";
 import { NotFoundError, UnauthorizedError } from "../errors/errors";
-import { MealLog, MealLogWithNutrition } from "../types";
-import { sumMealNutrition } from "./nutrition";
+import { MealLog, MealLogWithNutrition, MealSummary } from "../types";
+import { sumMealNutrition, sumMealsNutrition, sumNutrition } from "./nutrition";
 
 function withNutrition(mealLog: MealLog): MealLogWithNutrition {
   return {
     ...mealLog,
     nutrition: sumMealNutrition(mealLog),
+    recipeItems: mealLog.recipeItems.map((recipeItem) => ({
+      ...recipeItem,
+      nutrition: sumNutrition(recipeItem.recipe.ingredients),
+    })),
   };
 }
 
@@ -17,6 +21,17 @@ async function getMealLogs(
 ): Promise<MealLogWithNutrition[]> {
   const mealLogs = await mealLogsRepository.getMealLogs(userId, logDate);
   return mealLogs.map(withNutrition);
+}
+
+async function getDailyMealSummary(
+  userId: number,
+  date: Date,
+): Promise<MealSummary> {
+  const mealLogs = await getMealLogs(userId, date);
+  return {
+    meals: mealLogs,
+    nutrition: sumMealsNutrition(mealLogs),
+  };
 }
 
 async function createMealLog(
@@ -67,6 +82,7 @@ async function deleteMealLog(mealLogId: number, userId: number) {
 
 export const mealLogsService = {
   getMealLogs,
+  getDailyMealSummary,
   createMealLog,
   updateMealLog,
   deleteMealLog,

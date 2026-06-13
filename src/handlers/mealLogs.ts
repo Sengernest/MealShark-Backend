@@ -3,13 +3,13 @@ import { mealLogsService } from "../services/mealLogs";
 import { mealLogsQuerySchema } from "../dto/mealLogs";
 import { ValidationError } from "../errors/errors";
 
-export async function handleGetMealLogs(req: Request, res: Response) {
+export async function handleGetDailyMealSummary(req: Request, res: Response) {
   const userId = req.user?.id!;
   const result = mealLogsQuerySchema.safeParse(req.query);
   if (!result.success) {
-    throw new ValidationError(result.error.issues)
+    throw new ValidationError(result.error.issues);
   }
-  const mealLogs = await mealLogsService.getMealLogs(
+  const mealLogs = await mealLogsService.getDailyMealSummary(
     userId,
     result.data.logDate,
   );

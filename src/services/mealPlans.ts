@@ -2,16 +2,12 @@ import { mealPlansRepository } from "../dataaccess/mealPlans";
 import { MealPlanSchema } from "../dto/mealPlans";
 import { NotFoundError, UnauthorizedError } from "../errors/errors";
 import { MealPlan, MealPlanWithNutrition } from "../types";
-import {
-  sumMealNutrition,
-  sumMealPlanNutrition,
-  sumNutrition,
-} from "./nutrition";
+import { sumMealNutrition, sumMealsNutrition, sumNutrition } from "./nutrition";
 
 function withNutrition(mealPlan: MealPlan): MealPlanWithNutrition {
   return {
     ...mealPlan,
-    nutrition: sumMealPlanNutrition(mealPlan),
+    nutrition: sumMealsNutrition(mealPlan.meals),
     meals: mealPlan.meals.map((meal) => ({
       ...meal,
       nutrition: sumMealNutrition(meal),

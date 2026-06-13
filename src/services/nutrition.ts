@@ -1,7 +1,14 @@
-import { FoodItem, Meal, MealLog, MealPlan, Nutrition } from "../types";
+import {
+  FoodItem,
+  Meal,
+  MealItem,
+  MealLog,
+  MealPlan,
+  Nutrition,
+} from "../types";
 
 function roundValue(value: number) {
-  return Math.round(value * 10) / 10
+  return Math.round(value * 10) / 10;
 }
 
 function roundNutrition(nutrition: Nutrition): Nutrition {
@@ -10,9 +17,9 @@ function roundNutrition(nutrition: Nutrition): Nutrition {
     macros: {
       protein: roundValue(nutrition.macros.protein),
       fat: roundValue(nutrition.macros.carbs),
-      carbs: roundValue(nutrition.macros.fat) 
-    }
-  }
+      carbs: roundValue(nutrition.macros.fat),
+    },
+  };
 }
 
 // Sums up the nutrition content in a list of foods, such as in a recipe or meal log
@@ -37,30 +44,32 @@ export function sumNutrition(foodItems: FoodItem[]): Nutrition {
       },
     },
   );
-  return roundNutrition(nutrition)
+  return roundNutrition(nutrition);
 }
 
-export function sumMealNutrition(meal: Meal | MealLog): Nutrition {
-  const nutritionFromRecipes = roundNutrition(meal.recipeItems.reduce(
-    (acc, recipeItem) => {
-      const recipeNutrition = sumNutrition(recipeItem.recipe.ingredients);
-      acc.calories += recipeItem.servings * recipeNutrition.calories;
-      acc.macros.protein +=
-        recipeItem.servings * recipeNutrition.macros.protein;
-      acc.macros.carbs += recipeItem.servings * recipeNutrition.macros.carbs;
-      acc.macros.fat += recipeItem.servings * recipeNutrition.macros.fat;
+export function sumMealNutrition(meal: MealItem): Nutrition {
+  const nutritionFromRecipes = roundNutrition(
+    meal.recipeItems.reduce(
+      (acc, recipeItem) => {
+        const recipeNutrition = sumNutrition(recipeItem.recipe.ingredients);
+        acc.calories += recipeItem.servings * recipeNutrition.calories;
+        acc.macros.protein +=
+          recipeItem.servings * recipeNutrition.macros.protein;
+        acc.macros.carbs += recipeItem.servings * recipeNutrition.macros.carbs;
+        acc.macros.fat += recipeItem.servings * recipeNutrition.macros.fat;
 
-      return acc;
-    },
-    {
-      calories: 0,
-      macros: {
-        protein: 0,
-        carbs: 0,
-        fat: 0,
+        return acc;
       },
-    },
-  ));
+      {
+        calories: 0,
+        macros: {
+          protein: 0,
+          carbs: 0,
+          fat: 0,
+        },
+      },
+    ),
+  );
   const nutritionFromFoods = sumNutrition(meal.foodItems);
 
   return {
@@ -75,23 +84,25 @@ export function sumMealNutrition(meal: Meal | MealLog): Nutrition {
   };
 }
 
-export function sumMealPlanNutrition(mealPlan: MealPlan): Nutrition {
-  return roundNutrition(mealPlan.meals.reduce(
-    (acc, meal) => {
-      const mealNutrition = sumMealNutrition(meal);
-      acc.calories += mealNutrition.calories;
-      acc.macros.protein += mealNutrition.macros.protein;
-      acc.macros.carbs += mealNutrition.macros.carbs;
-      acc.macros.fat += mealNutrition.macros.fat;
-      return acc;
-    },
-    {
-      calories: 0,
-      macros: {
-        protein: 0,
-        carbs: 0,
-        fat: 0,
+export function sumMealsNutrition(meals: MealItem[]): Nutrition {
+  return roundNutrition(
+    meals.reduce(
+      (acc, meal) => {
+        const mealNutrition = sumMealNutrition(meal);
+        acc.calories += mealNutrition.calories;
+        acc.macros.protein += mealNutrition.macros.protein;
+        acc.macros.carbs += mealNutrition.macros.carbs;
+        acc.macros.fat += mealNutrition.macros.fat;
+        return acc;
       },
-    },
-  ));
+      {
+        calories: 0,
+        macros: {
+          protein: 0,
+          carbs: 0,
+          fat: 0,
+        },
+      },
+    ),
+  );
 }
