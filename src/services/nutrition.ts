@@ -1,4 +1,4 @@
-import { FoodItem, Meal, MealLog, Nutrition } from "../types";
+import { FoodItem, Meal, MealLog, MealPlan, Nutrition } from "../types";
 
 function roundValue(value: number) {
   return Math.round(value * 10) / 10
@@ -73,4 +73,25 @@ export function sumMealNutrition(meal: Meal | MealLog): Nutrition {
       fat: nutritionFromRecipes.macros.fat + nutritionFromFoods.macros.fat,
     },
   };
+}
+
+export function sumMealPlanNutrition(mealPlan: MealPlan): Nutrition {
+  return roundNutrition(mealPlan.meals.reduce(
+    (acc, meal) => {
+      const mealNutrition = sumMealNutrition(meal);
+      acc.calories += mealNutrition.calories;
+      acc.macros.protein += mealNutrition.macros.protein;
+      acc.macros.carbs += mealNutrition.macros.carbs;
+      acc.macros.fat += mealNutrition.macros.fat;
+      return acc;
+    },
+    {
+      calories: 0,
+      macros: {
+        protein: 0,
+        carbs: 0,
+        fat: 0,
+      },
+    },
+  ));
 }
