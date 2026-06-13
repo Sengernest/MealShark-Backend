@@ -80,7 +80,7 @@ app.delete("/recipes/:id", requireAuth, idValidator(), handleDeleteRecipe);
 // Meal plans
 app.get("/meal-plans/samples", handleGetSampleMealPlans);
 app.get("/me/meal-plans", requireAuth, handleGetUserMealPlans);
-app.get("/meal-plans/:id", idValidator(), handleGetMealPlan);
+app.get("/meal-plans/:id", requireAuth, idValidator(), handleGetMealPlan);
 app.post(
   "/meal-plans",
   requireAuth,

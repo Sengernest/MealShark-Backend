@@ -105,7 +105,7 @@ async function createMealPlan(
   mealPlan: MealPlanSchema,
   creatorId: number,
 ): Promise<MealPlan | undefined> {
-  return await db.transaction(async (tx) => {
+  const newMealPlan = await db.transaction(async (tx) => {
     const [newMealPlan] = await tx
       .insert(mealPlansTable)
       .values({
@@ -139,13 +139,13 @@ async function createMealPlan(
         );
       }
     }
-
-    return getMealPlan(newMealPlan.id);
+    return newMealPlan
   });
+  return getMealPlan(newMealPlan.id);
 }
 
 async function updateMealPlan(mealPlanId: number, mealPlan: MealPlanSchema): Promise<MealPlan | undefined> {
-  return await db.transaction(async (tx) => {
+  await db.transaction(async (tx) => {
     const [updatedPlan] = await tx
       .update(mealPlansTable)
       .set({ name: mealPlan.name })
@@ -182,9 +182,8 @@ async function updateMealPlan(mealPlanId: number, mealPlan: MealPlanSchema): Pro
         );
       }
     }
-
-    return getMealPlan(updatedPlan.id);
   });
+  return getMealPlan(mealPlanId);
 }
 
 async function deleteMealPlan(mealPlanId: number) {
