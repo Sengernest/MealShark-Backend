@@ -1,12 +1,13 @@
 import { Request, Response } from "express";
 import { mealLogsService } from "../services/mealLogs";
 import { mealLogsQuerySchema } from "../dto/mealLogs";
+import { ValidationError } from "../errors/errors";
 
 export async function handleGetMealLogs(req: Request, res: Response) {
   const userId = req.user?.id!;
   const result = mealLogsQuerySchema.safeParse(req.query);
   if (!result.success) {
-    return res.status(400).json(result.error);
+    throw new ValidationError(result.error.issues)
   }
   const mealLogs = await mealLogsService.getMealLogs(
     userId,

@@ -19,7 +19,7 @@ export function paramsValidator(schema: ZodObject) {
   return (req: Request, res: Response, next: NextFunction) => {
     const result = schema.safeParse(req.params);
     if (!result.success) {
-      return res.status(400).json(result.error);
+      throw new ValidationError(result.error.issues)
     }
     req.params = result.data as any;
     next();
@@ -40,7 +40,7 @@ export function queryValidator(schema: ZodObject) {
   return (req: Request, res: Response, next: NextFunction) => {
     const result = schema.safeParse(req.query);
     if (!result.success) {
-      return res.status(400).json(result.error);
+      throw new ValidationError(result.error.issues)
     }
     req.query = result.data as any;
     next();
