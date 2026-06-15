@@ -38,12 +38,19 @@ import {
   handleUpdateMealPlan,
 } from "./handlers/mealPlans";
 import { errorHandler } from "./middleware/error";
+import cors from "cors"
 
 const app = express();
 const cookieParser = require("cookie-parser");
 
 app.use(json());
 app.use(cookieParser());
+app.use(
+  cors({
+    origin: process.env.FRONTEND_URL,
+    credentials: true,
+  }),
+);
 
 app.get("/", (req: Request, res: Response) => {
   res.send("Hello world!");
