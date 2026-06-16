@@ -8,7 +8,7 @@ export async function handleGetFoods(req: Request, res: Response) {
 }
 
 const searchFoodsQuerySchema = z.object({
-  q: z.string(),
+  q: z.string().optional(),
   limit: z.coerce.number().int().positive().default(20),
 });
 
