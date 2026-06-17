@@ -5,9 +5,7 @@ export async function handleGetMacroGoals(req: Request, res: Response) {
   const userId = req.user?.id!;
   const macroGoals = await macroGoalsService.getMacroGoalsByUserId(userId);
   if (!macroGoals) {
-    return res.status(404).json({
-      error: "Macro goals not found",
-    });
+    return res.json(null);
   }
   res.json(macroGoals);
 }
