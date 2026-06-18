@@ -1,5 +1,6 @@
 import { relations } from "drizzle-orm";
 import { date } from "drizzle-orm/pg-core";
+import { boolean } from "drizzle-orm/pg-core";
 import { unique } from "drizzle-orm/pg-core";
 import { pgEnum } from "drizzle-orm/pg-core";
 import { timestamp } from "drizzle-orm/pg-core";
@@ -32,7 +33,13 @@ export const foodsTable = pgTable("foods", {
 export const recipesTable = pgTable("recipes", {
   id: integer().primaryKey().generatedAlwaysAsIdentity(),
   name: text().notNull(),
-  creatorId: integer("creator_id").references(() => usersTable.id),
+  creatorId: integer("creator_id").references(() => usersTable.id), // Null if sample
+  isSample: boolean().notNull(),
+  description: text(),
+  instructions: text(),
+  servings: integer().notNull(),
+  prepTime: integer(),
+  cookTime: integer(),
 });
 
 // Amount of a food item in a specific recipe, i.e. ingredients
