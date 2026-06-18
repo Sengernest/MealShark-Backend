@@ -1,8 +1,14 @@
 import { Request, Response } from "express";
 import { recipesService } from "../services/recipes";
 
-export async function handleGetRecipes(req: Request, res: Response) {
-  const recipes = await recipesService.getRecipes();
+export async function handleGetAllRecipes(req: Request, res: Response) {
+  const userId = req.user?.id!;
+  const recipes = await recipesService.getAllRecipes(userId);
+  res.json(recipes);
+}
+
+export async function handleGetSampleRecipes(req: Request, res: Response) {
+  const recipes = await recipesService.getSampleRecipes();
   res.json(recipes);
 }
 
@@ -26,9 +32,13 @@ export async function handleCreateRecipe(req: Request, res: Response) {
 }
 
 export async function handleUpdateRecipe(req: Request, res: Response) {
-  const recipeId = Number(req.params.id)
+  const recipeId = Number(req.params.id);
   const userId = req.user?.id!;
-  const updatedRecipe = await recipesService.updateRecipe(recipeId, req.body, userId);
+  const updatedRecipe = await recipesService.updateRecipe(
+    recipeId,
+    req.body,
+    userId,
+  );
   res.json(updatedRecipe);
 }
 

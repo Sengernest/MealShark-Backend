@@ -4,7 +4,12 @@ import { macroGoalsSchema } from "./dto/macroGoals";
 import { mealPlanSchema } from "./dto/mealPlans";
 import { recipeSchema } from "./dto/recipes";
 import { profileSchema } from "./dto/profile";
-import { handleGetCurrentUser, handleLogin, handleLogout, handleSignup } from "./handlers/auth";
+import {
+  handleGetCurrentUser,
+  handleLogin,
+  handleLogout,
+  handleSignup,
+} from "./handlers/auth";
 import { handleUpdateProfile } from "./handlers/users";
 import {
   handleCreateMacroGoals,
@@ -16,9 +21,10 @@ import {
   handleCreateRecipe,
   handleDeleteRecipe,
   handleGetRecipe,
-  handleGetRecipes,
+  handleGetAllRecipes,
   handleGetUserRecipes,
   handleUpdateRecipe,
+  handleGetSampleRecipes,
 } from "./handlers/recipes";
 import { requireAuth } from "./middleware/auth";
 import { bodyValidator, idValidator } from "./middleware/validation";
@@ -40,7 +46,7 @@ import {
   handleUpdateMealPlan,
 } from "./handlers/mealPlans";
 import { errorHandler } from "./middleware/error";
-import cors from "cors"
+import cors from "cors";
 import dotenv from "dotenv";
 dotenv.config();
 
@@ -64,17 +70,23 @@ app.get("/", (req: Request, res: Response) => {
 app.post("/signup", bodyValidator(signupSchema), handleSignup);
 app.post("/login", bodyValidator(loginSchema), handleLogin);
 app.post("/logout", handleLogout);
-app.get("/me", requireAuth, handleGetCurrentUser)
+app.get("/me", requireAuth, handleGetCurrentUser);
 
 // Profile
-app.put("/me/profile", requireAuth, bodyValidator(profileSchema), handleUpdateProfile);
+app.put(
+  "/me/profile",
+  requireAuth,
+  bodyValidator(profileSchema),
+  handleUpdateProfile,
+);
 
 // Foods
 app.get("/foods", handleGetFoods);
 app.get("/foods/search", handleSearchFoods);
 
 // Recipes
-app.get("/recipes", handleGetRecipes);
+app.get("/recipes", requireAuth, handleGetAllRecipes);
+app.get("/recipes/samples", handleGetSampleRecipes);
 app.get("/me/recipes", requireAuth, handleGetUserRecipes);
 app.get("/recipes/:id", requireAuth, idValidator(), handleGetRecipe);
 app.post(

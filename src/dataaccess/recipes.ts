@@ -1,11 +1,26 @@
-import { eq } from "drizzle-orm";
+import { eq, or } from "drizzle-orm";
 import db from "../db/db";
 import { foodsToRecipesTable, recipesTable } from "../db/schema";
 import { RecipeSchema } from "../dto/recipes";
 import { Recipe } from "../types";
 
-async function getRecipes(): Promise<Recipe[]> {
+// Get all sample recipes together with recipes created by a given user
+async function getAllRecipes(userId: number): Promise<Recipe[]> {
   return await db.query.recipesTable.findMany({
+    where: or(eq(recipesTable.creatorId, userId), recipesTable.isSample),
+    with: {
+      ingredients: {
+        with: {
+          food: true,
+        },
+      },
+    },
+  });
+}
+
+async function getSampleRecipes(): Promise<Recipe[]> {
+  return await db.query.recipesTable.findMany({
+    where: eq(recipesTable.isSample, true),
     with: {
       ingredients: {
         with: {
@@ -93,7 +108,8 @@ async function deleteRecipe(recipeId: number) {
 }
 
 export const recipesRepository = {
-  getRecipes,
+  getAllRecipes,
+  getSampleRecipes,
   getUserRecipes,
   getRecipe,
   createRecipe,

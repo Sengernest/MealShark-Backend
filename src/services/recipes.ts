@@ -11,8 +11,15 @@ function withNutrition(recipe: Recipe): RecipeWithNutrition {
   };
 }
 
-async function getRecipes(): Promise<RecipeWithNutrition[]> {
-  const recipes = await recipesRepository.getRecipes();
+// Get all sample recipes together with recipes created by a given user
+async function getAllRecipes(userId: number): Promise<RecipeWithNutrition[]> {
+  const recipes = await recipesRepository.getAllRecipes(userId);
+  return recipes.map(withNutrition);
+}
+
+// Get sample recipes (accessible to any user)
+async function getSampleRecipes(userId?: number): Promise<RecipeWithNutrition[]> {
+  const recipes = await recipesRepository.getSampleRecipes();
   return recipes.map(withNutrition);
 }
 
@@ -23,13 +30,16 @@ async function getUserRecipes(userId: number): Promise<RecipeWithNutrition[]> {
 }
 
 // Get recipe with computed calories
-async function getRecipe(recipeId: number, userId: number): Promise<RecipeWithNutrition> {
+async function getRecipe(
+  recipeId: number,
+  userId: number,
+): Promise<RecipeWithNutrition> {
   const recipe = await recipesRepository.getRecipe(recipeId);
   if (!recipe) {
-    throw new NotFoundError()
+    throw new NotFoundError();
   }
   if (recipe.creatorId !== userId) {
-    throw new UnauthorizedError()
+    throw new UnauthorizedError();
   }
   return withNutrition(recipe);
 }
@@ -40,7 +50,7 @@ async function createRecipe(
 ): Promise<RecipeWithNutrition> {
   const newRecipe = await recipesRepository.createRecipe(recipe, userId);
   if (!newRecipe) {
-    throw new NotFoundError()
+    throw new NotFoundError();
   }
   return withNutrition(newRecipe);
 }
@@ -63,7 +73,7 @@ async function updateRecipe(
     recipeUpdateData,
   );
   if (!updatedRecipe) {
-    throw new NotFoundError()
+    throw new NotFoundError();
   }
   return withNutrition(updatedRecipe);
 }
@@ -81,7 +91,8 @@ async function deleteRecipe(recipeId: number, userId: number) {
 }
 
 export const recipesService = {
-  getRecipes,
+  getAllRecipes,
+  getSampleRecipes,
   getUserRecipes,
   getRecipe,
   createRecipe,
