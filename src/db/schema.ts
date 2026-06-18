@@ -17,6 +17,10 @@ export const usersTable = pgTable("users", {
   name: text().notNull(),
   email: text().notNull().unique(),
   password: text().notNull(),
+  age: integer(),
+  weight: integer(),
+  height: integer(),
+  gender: text(), 
 });
 
 export const foodsTable = pgTable("foods", {
