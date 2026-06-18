@@ -30,6 +30,26 @@ export const foodsTable = pgTable("foods", {
   carbs: numeric({ mode: "number" }).notNull(),
 });
 
+export const unitsTable = pgTable("units", {
+  id: integer().primaryKey(),
+  name: text().notNull(),
+});
+
+// Stores conversions of grams to other units for each food
+export const foodUnitsTable = pgTable(
+  "food_units",
+  {
+    foodId: integer("food_id")
+      .references(() => foodsTable.id)
+      .notNull(),
+    unitId: integer("unit_id")
+      .references(() => unitsTable.id)
+      .notNull(),
+    gramsPerUnit: numeric({ mode: "number" }).notNull(),
+  },
+  (table) => [primaryKey({ columns: [table.foodId, table.unitId] })],
+);
+
 export const recipesTable = pgTable("recipes", {
   id: integer().primaryKey().generatedAlwaysAsIdentity(),
   name: text().notNull(),
@@ -53,6 +73,9 @@ export const foodsToRecipesTable = pgTable(
       .references(() => recipesTable.id, { onDelete: "cascade" })
       .notNull(),
     amount: numeric({ mode: "number" }).notNull(),
+    unitId: integer("unit_id")
+      .references(() => unitsTable.id)
+      .notNull(),
   },
   (table) => [primaryKey({ columns: [table.foodId, table.recipeId] })],
 );
