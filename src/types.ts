@@ -24,7 +24,11 @@ export type UserInput = typeof usersTable.$inferInsert;
 export type Profile = {
   name: string;
   email: string;
-};
+  age?: number; 
+  weight?: number;
+  height?: number;
+  gender?: "male" | "female"; 
+}
 
 export type Food = typeof foodsTable.$inferSelect & {
   units: FoodUnit[];
