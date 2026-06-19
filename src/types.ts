@@ -11,6 +11,8 @@ import {
   mealLogsTable,
   foodsToMealLogsTable,
   mealPlansTable,
+  foodUnitsTable,
+  unitsTable,
 } from "./db/schema";
 
 export type User = typeof usersTable.$inferSelect;
@@ -21,11 +23,18 @@ export type UserInput = typeof usersTable.$inferInsert;
 
 export type Profile = {
   name: string;
-  email: string
-}
+  email: string;
+};
 
-export type Food = typeof foodsTable.$inferSelect;
-export type FoodInput = typeof foodsTable.$inferInsert;
+export type Food = typeof foodsTable.$inferSelect & {
+  units: FoodUnit[];
+};
+
+export type Unit = typeof unitsTable.$inferSelect;
+
+export type FoodUnit = typeof foodUnitsTable.$inferSelect & {
+  unit: Unit;
+};
 
 export type SearchResult<T> = {
   item: T;
@@ -99,12 +108,12 @@ export type MealLogWithNutrition = MealLog & {
   nutrition: Nutrition;
 };
 
-export type MealItem = Meal | MealLog
+export type MealItem = Meal | MealLog;
 
 export type MealSummary = {
-  meals: MealLogWithNutrition[]
-  nutrition: Nutrition
-}
+  meals: MealLogWithNutrition[];
+  nutrition: Nutrition;
+};
 
 export type MacroGoals = typeof macroGoalsTable.$inferSelect;
 

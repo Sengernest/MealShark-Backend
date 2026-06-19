@@ -9,9 +9,7 @@ async function searchFood(query?: string, limit: number = 20): Promise<Food[]> {
   if (!query) {
     return foodsRepository.getFoods(limit);
   }
-  return (await foodsRepository.searchFood(query, limit)).map(
-    (match) => match.item,
-  );
+  return foodsRepository.searchFood(query, limit);
 }
 
 export const foodsService = {

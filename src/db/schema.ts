@@ -80,23 +80,35 @@ export const foodsToRecipesTable = pgTable(
   (table) => [primaryKey({ columns: [table.foodId, table.recipeId] })],
 );
 
+export const foodsRelations = relations(foodsTable, ({ many }) => ({
+  units: many(foodUnitsTable),
+}));
+
+export const foodsToUnitsRelations = relations(foodUnitsTable, ({ one }) => ({
+  food: one(foodsTable, {
+    fields: [foodUnitsTable.foodId],
+    references: [foodsTable.id],
+  }),
+  unit: one(unitsTable, {
+    fields: [foodUnitsTable.unitId],
+    references: [unitsTable.id],
+  }),
+}));
+
 export const recipesRelations = relations(recipesTable, ({ many }) => ({
   ingredients: many(foodsToRecipesTable),
 }));
 
-export const foodsToRecipesRelations = relations(
-  foodsToRecipesTable,
-  ({ one }) => ({
-    food: one(foodsTable, {
-      fields: [foodsToRecipesTable.foodId],
-      references: [foodsTable.id],
-    }),
-    recipe: one(recipesTable, {
-      fields: [foodsToRecipesTable.recipeId],
-      references: [recipesTable.id],
-    }),
+export const foodsToRecipesRelations = relations(foodsToRecipesTable, ({ one }) => ({
+  food: one(foodsTable, {
+    fields: [foodsToRecipesTable.foodId],
+    references: [foodsTable.id],
   }),
-);
+  recipe: one(recipesTable, {
+    fields: [foodsToRecipesTable.recipeId],
+    references: [recipesTable.id],
+  }),
+}));
 
 export const mealPlansTable = pgTable("meal_plans", {
   id: integer().primaryKey().generatedAlwaysAsIdentity(),
