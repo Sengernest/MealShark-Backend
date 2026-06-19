@@ -1,12 +1,5 @@
-import { BusinessError, InvariantError } from "../errors/errors";
-import {
-  FoodItem,
-  Meal,
-  MealItem,
-  MealLog,
-  MealPlan,
-  Nutrition,
-} from "../types";
+import { InvariantError } from "../errors/errors";
+import { FoodItem, MealItem, Nutrition } from "../types";
 
 function roundValue(value: number) {
   return Math.round(value * 10) / 10;
@@ -23,8 +16,23 @@ function roundNutrition(nutrition: Nutrition): Nutrition {
   };
 }
 
+// Calculate nutrition per serving given total nutrition
+function perServing(nutrition: Nutrition, servings: number): Nutrition {
+  return {
+    calories: nutrition.calories / servings,
+    macros: {
+      protein: nutrition.macros.protein / servings,
+      fat: nutrition.macros.fat / servings,
+      carbs: nutrition.macros.carbs / servings,
+    },
+  };
+}
+
 // Sums up the nutrition content in a list of foods, such as in a recipe or meal log
-export function sumNutrition(foodItems: FoodItem[]): Nutrition {
+export function sumNutrition(
+  foodItems: FoodItem[],
+  servings?: number,
+): Nutrition {
   const nutrition = foodItems.reduce(
     (acc, foodItem) => {
       const foodUnit = foodItem.food.units.find(
@@ -35,7 +43,7 @@ export function sumNutrition(foodItems: FoodItem[]): Nutrition {
           `Food unit ${foodItem.unitId} is not supported for food ${foodItem.foodId}`,
         );
       }
-      const amountInGrams = foodItem.amount * foodUnit.gramsPerUnit
+      const amountInGrams = foodItem.amount * foodUnit.gramsPerUnit;
       const factor = amountInGrams / 100;
 
       acc.calories += factor * foodItem.food.calories;
@@ -54,7 +62,7 @@ export function sumNutrition(foodItems: FoodItem[]): Nutrition {
       },
     },
   );
-  return roundNutrition(nutrition);
+  return roundNutrition(servings ? perServing(nutrition, servings) : nutrition);
 }
 
 export function sumMealNutrition(meal: MealItem): Nutrition {
