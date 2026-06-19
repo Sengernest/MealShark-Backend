@@ -33,7 +33,7 @@ export type Food = typeof foodsTable.$inferSelect & {
 export type Unit = typeof unitsTable.$inferSelect;
 
 export type FoodUnit = typeof foodUnitsTable.$inferSelect & {
-  unit: Unit;
+  unit?: Unit;
 };
 
 export type SearchResult<T> = {
@@ -58,7 +58,7 @@ export type Nutrition = {
   };
 };
 
-export type RecipeWithNutrition = Recipe & {
+export type RecipeView = Recipe & {
   nutrition: Nutrition;
 };
 

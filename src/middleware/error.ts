@@ -1,5 +1,7 @@
 import { Request, Response, NextFunction } from "express";
 import {
+  BusinessError,
+  InvariantError,
   NotFoundError,
   UnauthorizedError,
   ValidationError,
@@ -20,7 +22,15 @@ export function errorHandler(
   }
 
   if (err instanceof ValidationError) {
-    return res.status(400).json({ error: "Invalid request", message: err.issues });
+    return res.status(400).json({ error: "Invalid request shape", message: err.issues });
+  }
+
+  if (err instanceof BusinessError) {
+    return res.status(409).json({error: "Invalid request", message: err})
+  }
+
+  if (err instanceof InvariantError) {
+    return res.status(500).json({error: "Invariant error", message: err})
   }
 
   return res.status(500).json({ error: "Internal server error", message: err });

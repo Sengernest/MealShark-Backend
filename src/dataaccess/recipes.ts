@@ -11,7 +11,15 @@ async function getAllRecipes(userId: number): Promise<Recipe[]> {
     with: {
       ingredients: {
         with: {
-          food: true,
+          food: {
+            with: {
+              units: {
+                with: {
+                  unit: true
+                }
+              }
+            }
+          },
         },
       },
     },
@@ -24,7 +32,15 @@ async function getSampleRecipes(): Promise<Recipe[]> {
     with: {
       ingredients: {
         with: {
-          food: true,
+          food: {
+            with: {
+              units: {
+                with: {
+                  unit: true
+                }
+              }
+            }
+          },
         },
       },
     },
@@ -38,7 +54,15 @@ async function getUserRecipes(userId: number): Promise<Recipe[]> {
     with: {
       ingredients: {
         with: {
-          food: true,
+          food: {
+            with: {
+              units: {
+                with: {
+                  unit: true
+                }
+              }
+            }
+          },
         },
       },
     },
@@ -51,7 +75,15 @@ async function getRecipe(recipeId: number): Promise<Recipe | undefined> {
     with: {
       ingredients: {
         with: {
-          food: true,
+          food: {
+            with: {
+              units: {
+                with: {
+                  unit: true
+                }
+              }
+            }
+          },
         },
       },
     },

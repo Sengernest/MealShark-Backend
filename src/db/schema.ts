@@ -1,5 +1,5 @@
 import { relations } from "drizzle-orm";
-import { date } from "drizzle-orm/pg-core";
+import { date, foreignKey } from "drizzle-orm/pg-core";
 import { boolean } from "drizzle-orm/pg-core";
 import { unique } from "drizzle-orm/pg-core";
 import { pgEnum } from "drizzle-orm/pg-core";
@@ -77,7 +77,13 @@ export const foodsToRecipesTable = pgTable(
       .references(() => unitsTable.id)
       .notNull(),
   },
-  (table) => [primaryKey({ columns: [table.foodId, table.recipeId] })],
+  (table) => [
+    primaryKey({ columns: [table.foodId, table.recipeId] }),
+    foreignKey({
+      columns: [table.foodId, table.unitId],
+      foreignColumns: [foodUnitsTable.foodId, foodUnitsTable.unitId],
+    }),
+  ],
 );
 
 export const foodsRelations = relations(foodsTable, ({ many }) => ({
@@ -99,16 +105,19 @@ export const recipesRelations = relations(recipesTable, ({ many }) => ({
   ingredients: many(foodsToRecipesTable),
 }));
 
-export const foodsToRecipesRelations = relations(foodsToRecipesTable, ({ one }) => ({
-  food: one(foodsTable, {
-    fields: [foodsToRecipesTable.foodId],
-    references: [foodsTable.id],
+export const foodsToRecipesRelations = relations(
+  foodsToRecipesTable,
+  ({ one }) => ({
+    food: one(foodsTable, {
+      fields: [foodsToRecipesTable.foodId],
+      references: [foodsTable.id],
+    }),
+    recipe: one(recipesTable, {
+      fields: [foodsToRecipesTable.recipeId],
+      references: [recipesTable.id],
+    }),
   }),
-  recipe: one(recipesTable, {
-    fields: [foodsToRecipesTable.recipeId],
-    references: [recipesTable.id],
-  }),
-}));
+);
 
 export const mealPlansTable = pgTable("meal_plans", {
   id: integer().primaryKey().generatedAlwaysAsIdentity(),
@@ -154,6 +163,9 @@ export const foodsToMealsTable = pgTable(
       .references(() => mealsTable.id, { onDelete: "cascade" })
       .notNull(),
     amount: numeric({ mode: "number" }).notNull(),
+    unitId: integer("unit_id")
+      .references(() => unitsTable.id)
+      .notNull(),
   },
   (table) => [primaryKey({ columns: [table.foodId, table.mealId] })],
 );
@@ -233,6 +245,9 @@ export const foodsToMealLogsTable = pgTable(
       .references(() => foodsTable.id)
       .notNull(),
     amount: numeric({ mode: "number" }).notNull(),
+    unitId: integer("unit_id")
+      .references(() => unitsTable.id)
+      .notNull(),
   },
   (table) => [primaryKey({ columns: [table.mealLogId, table.foodId] })],
 );

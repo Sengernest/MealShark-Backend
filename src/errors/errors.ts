@@ -11,3 +11,7 @@ export class ValidationError extends Error {
     this.issues = issues
   }
 }
+
+export class BusinessError extends Error{} // Violation of business logic
+
+export class InvariantError extends Error{} // Logically impossible state

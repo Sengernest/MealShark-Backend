@@ -1,3 +1,4 @@
+import { BusinessError, InvariantError } from "../errors/errors";
 import {
   FoodItem,
   Meal,
@@ -26,7 +27,16 @@ function roundNutrition(nutrition: Nutrition): Nutrition {
 export function sumNutrition(foodItems: FoodItem[]): Nutrition {
   const nutrition = foodItems.reduce(
     (acc, foodItem) => {
-      const factor = foodItem.amount / 100;
+      const foodUnit = foodItem.food.units.find(
+        (foodUnit) => foodUnit.unitId === foodItem.unitId,
+      );
+      if (!foodUnit) {
+        throw new InvariantError(
+          `Food unit ${foodItem.unitId} is not supported for food ${foodItem.foodId}`,
+        );
+      }
+      const amountInGrams = foodItem.amount * foodUnit.gramsPerUnit
+      const factor = amountInGrams / 100;
 
       acc.calories += factor * foodItem.food.calories;
       acc.macros.protein += factor * foodItem.food.protein;
