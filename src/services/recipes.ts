@@ -11,7 +11,7 @@ import { sumNutrition } from "./nutrition";
 function withNutrition(recipe: Recipe): RecipeView {
   return {
     ...recipe,
-    nutrition: sumNutrition(recipe.ingredients),
+    nutrition: sumNutrition(recipe.ingredients, recipe.servings),
   };
 }
 
@@ -42,7 +42,7 @@ async function getRecipe(
   if (!recipe) {
     throw new NotFoundError();
   }
-  if (recipe.creatorId !== userId) {
+  if (!recipe.isSample && recipe.creatorId !== userId) {
     throw new UnauthorizedError();
   }
   return withNutrition(recipe);
