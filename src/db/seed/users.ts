@@ -1,7 +1,7 @@
 import bcrypt from "bcrypt";
-import db from "./db";
-import { usersTable } from "./schema";
-import dotenv from "dotenv"
+import dotenv from "dotenv";
+import db from "../db";
+import { usersTable } from "../schema";
 dotenv.config()
 
 const sampleUsers = [
@@ -12,7 +12,7 @@ const sampleUsers = [
   },
 ];
 
-export async function seedDb() {
+export async function seedUsers() {
   const sampleUsersHashed = await Promise.all(
     sampleUsers.map(async (user) => {
       const passwordHash = await bcrypt.hash(user.password, 10);
@@ -25,4 +25,4 @@ export async function seedDb() {
   await db.insert(usersTable).values(sampleUsersHashed);
 }
 
-seedDb();
+seedUsers()

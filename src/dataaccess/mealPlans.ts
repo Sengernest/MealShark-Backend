@@ -1,4 +1,4 @@
-import { eq, isNull } from "drizzle-orm";
+import { eq, isNull, SQL } from "drizzle-orm";
 import db from "../db/db";
 import {
   foodsToMealsTable,
@@ -8,68 +8,6 @@ import {
 } from "../db/schema";
 import { MealPlanSchema } from "../dto/mealPlans";
 import { MealPlan } from "../types";
-
-async function getSampleMealPlans(): Promise<MealPlan[]> {
-  const mealPlans = await db.query.mealPlansTable.findMany({
-    where: isNull(mealPlansTable.creatorId),
-    with: {
-      meals: {
-        with: {
-          recipeItems: {
-            with: {
-              recipe: {
-                with: {
-                  ingredients: {
-                    with: {
-                      food: true,
-                    },
-                  },
-                },
-              },
-            },
-          },
-          foodItems: {
-            with: {
-              food: true,
-            },
-          },
-        },
-      },
-    },
-  });
-  return mealPlans;
-}
-
-async function getUserMealPlans(userId: number): Promise<MealPlan[]> {
-  const mealPlans = await db.query.mealPlansTable.findMany({
-    where: eq(mealPlansTable.creatorId, userId),
-    with: {
-      meals: {
-        with: {
-          recipeItems: {
-            with: {
-              recipe: {
-                with: {
-                  ingredients: {
-                    with: {
-                      food: true,
-                    },
-                  },
-                },
-              },
-            },
-          },
-          foodItems: {
-            with: {
-              food: true,
-            },
-          },
-        },
-      },
-    },
-  });
-  return mealPlans;
-}
 
 async function getMealPlan(mealPlanId: number): Promise<MealPlan | undefined> {
   return db.query.mealPlansTable.findFirst({
@@ -83,7 +21,16 @@ async function getMealPlan(mealPlanId: number): Promise<MealPlan | undefined> {
                 with: {
                   ingredients: {
                     with: {
-                      food: true,
+                      food: {
+                        with: {
+                          units: {
+                            with: {
+                              unit: true,
+                            },
+                          },
+                        },
+                      },
+                      unit: true,
                     },
                   },
                 },
@@ -92,13 +39,78 @@ async function getMealPlan(mealPlanId: number): Promise<MealPlan | undefined> {
           },
           foodItems: {
             with: {
-              food: true,
+              food: {
+                with: {
+                  units: {
+                    with: {
+                      unit: true,
+                    },
+                  },
+                },
+              },
+              unit: true,
             },
           },
         },
       },
     },
   });
+}
+
+async function getMealPlans(filterCondition: SQL): Promise<MealPlan[]> {
+  return db.query.mealPlansTable.findMany({
+    where: filterCondition,
+    with: {
+      meals: {
+        with: {
+          recipeItems: {
+            with: {
+              recipe: {
+                with: {
+                  ingredients: {
+                    with: {
+                      food: {
+                        with: {
+                          units: {
+                            with: {
+                              unit: true,
+                            },
+                          },
+                        },
+                      },
+                      unit: true,
+                    },
+                  },
+                },
+              },
+            },
+          },
+          foodItems: {
+            with: {
+              food: {
+                with: {
+                  units: {
+                    with: {
+                      unit: true,
+                    },
+                  },
+                },
+              },
+              unit: true,
+            },
+          },
+        },
+      },
+    },
+  });
+}
+
+async function getSampleMealPlans(): Promise<MealPlan[]> {
+  return getMealPlans(isNull(mealPlansTable.creatorId));
+}
+
+async function getUserMealPlans(userId: number): Promise<MealPlan[]> {
+  return getMealPlans(eq(mealPlansTable.creatorId, userId));
 }
 
 async function createMealPlan(
@@ -139,12 +151,15 @@ async function createMealPlan(
         );
       }
     }
-    return newMealPlan
+    return newMealPlan;
   });
   return getMealPlan(newMealPlan.id);
 }
 
-async function updateMealPlan(mealPlanId: number, mealPlan: MealPlanSchema): Promise<MealPlan | undefined> {
+async function updateMealPlan(
+  mealPlanId: number,
+  mealPlan: MealPlanSchema,
+): Promise<MealPlan | undefined> {
   await db.transaction(async (tx) => {
     const [updatedPlan] = await tx
       .update(mealPlansTable)

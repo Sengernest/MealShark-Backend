@@ -3,6 +3,7 @@
     "bcrypt": "^6.0.0",
     "cookie-parser": "^1.4.7",
     "cors": "^2.8.6",
+    "csv-parse": "^7.0.0",
     "dotenv": "^17.4.2",
     "drizzle-orm": "^0.45.2",
     "ejs": "^5.0.2",
@@ -28,7 +29,9 @@
     "dev": "nodemon",
     "build": "tsc",
     "start": "node dist/index.js",
-    "seed": "ts-node src/db/seed.ts",
-    "import": "ts-node src/db/import.ts"
+    "import": "ts-node src/db/import.ts",
+    "seed:all": "ts-node src/db/seed/all.ts",
+    "seed:users": "ts-node src/db/seed/users.ts",
+    "seed:recipes": "ts-node src/db/seed/recipes.ts"
   }
 }

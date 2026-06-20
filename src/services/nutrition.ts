@@ -10,8 +10,8 @@ function roundNutrition(nutrition: Nutrition): Nutrition {
     calories: roundValue(nutrition.calories),
     macros: {
       protein: roundValue(nutrition.macros.protein),
-      fat: roundValue(nutrition.macros.carbs),
-      carbs: roundValue(nutrition.macros.fat),
+      fat: roundValue(nutrition.macros.fat),
+      carbs: roundValue(nutrition.macros.carbs),
     },
   };
 }

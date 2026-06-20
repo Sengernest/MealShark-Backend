@@ -22,7 +22,16 @@ async function getMealLogs(userId: number, logDate: Date): Promise<MealLog[]> {
             with: {
               ingredients: {
                 with: {
-                  food: true,
+                  food: {
+                    with: {
+                      units: {
+                        with: {
+                          unit: true
+                        }
+                      }
+                    }
+                  },
+                  unit: true,
                 },
               },
             },
@@ -31,7 +40,16 @@ async function getMealLogs(userId: number, logDate: Date): Promise<MealLog[]> {
       },
       foodItems: {
         with: {
-          food: true,
+          food: {
+            with: {
+              units: {
+                with: {
+                  unit: true
+                }
+              }
+            }
+          },
+          unit: true
         },
       },
     },
@@ -48,7 +66,16 @@ async function getMealLog(mealLogId: number): Promise<MealLog | undefined> {
             with: {
               ingredients: {
                 with: {
-                  food: true,
+                  food: {
+                    with: {
+                      units: {
+                        with: {
+                          unit: true
+                        }
+                      }
+                    }
+                  },
+                  unit: true
                 },
               },
             },
@@ -57,7 +84,16 @@ async function getMealLog(mealLogId: number): Promise<MealLog | undefined> {
       },
       foodItems: {
         with: {
-          food: true,
+          food: {
+            with: {
+              units: {
+                with: {
+                  unit: true
+                }
+              }
+            }
+          },
+          unit: true
         },
       },
     },

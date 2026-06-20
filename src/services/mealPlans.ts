@@ -2,6 +2,7 @@ import { mealPlansRepository } from "../dataaccess/mealPlans";
 import { MealPlanSchema } from "../dto/mealPlans";
 import { NotFoundError, UnauthorizedError } from "../errors/errors";
 import { MealPlan, MealPlanWithNutrition } from "../types";
+import { foodsService } from "./foods";
 import { sumMealNutrition, sumMealsNutrition, sumNutrition } from "./nutrition";
 
 function withNutrition(mealPlan: MealPlan): MealPlanWithNutrition {
@@ -39,6 +40,12 @@ async function getMealPlan(mealPlanId: number) {
 }
 
 async function createMealPlan(schema: MealPlanSchema, userId: number) {
+  // Check if food items have valid units
+  for (const meal of schema.meals) {
+    for (const foodItem of meal.foodItems) {
+      await foodsService.assertValidUnit(foodItem.foodId, foodItem.unitId)
+    }
+  }
   const mealPlan = await mealPlansRepository.createMealPlan(schema, userId);
   if (!mealPlan) {
     throw new NotFoundError();
@@ -51,6 +58,12 @@ async function updateMealPlan(
   schema: MealPlanSchema,
   userId: number,
 ) {
+  // Check if food items have valid units
+  for (const meal of schema.meals) {
+    for (const foodItem of meal.foodItems) {
+      await foodsService.assertValidUnit(foodItem.foodId, foodItem.unitId);
+    }
+  }
   const mealPlan = await mealPlansRepository.getMealPlan(mealPlanId);
   if (!mealPlan) {
     throw new NotFoundError();

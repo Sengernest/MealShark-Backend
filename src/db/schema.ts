@@ -19,7 +19,7 @@ export const usersTable = pgTable("users", {
   password: text().notNull(),
   age: integer(),
   height: integer(),
-  gender: text(), 
+  gender: text(),
 });
 
 export const foodsTable = pgTable("foods", {
@@ -119,6 +119,10 @@ export const foodsToRecipesRelations = relations(
       fields: [foodsToRecipesTable.recipeId],
       references: [recipesTable.id],
     }),
+    unit: one(unitsTable, {
+      fields: [foodsToRecipesTable.unitId],
+      references: [unitsTable.id]
+    })
   }),
 );
 
@@ -207,6 +211,10 @@ export const foodsToMealsRelations = relations(
       fields: [foodsToMealsTable.foodId],
       references: [foodsTable.id],
     }),
+    unit: one(unitsTable, {
+      fields: [foodsToMealsTable.unitId],
+      references: [unitsTable.id],
+    }),
     meal: one(mealsTable, {
       fields: [foodsToMealsTable.mealId],
       references: [mealsTable.id],
@@ -280,6 +288,10 @@ export const foodsToMealLogsRelations = relations(
     food: one(foodsTable, {
       fields: [foodsToMealLogsTable.foodId],
       references: [foodsTable.id],
+    }),
+    unit: one(unitsTable, {
+      fields: [foodsToMealLogsTable.unitId],
+      references: [unitsTable.id],
     }),
     mealLog: one(mealLogsTable, {
       fields: [foodsToMealLogsTable.mealLogId],
