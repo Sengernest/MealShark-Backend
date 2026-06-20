@@ -11,6 +11,7 @@ export const mealSchema = z.object({
   foodItems: z.array(
     z.object({
       foodId: z.int().positive(),
+      unitId: z.int().positive(),
       amount: z.number().positive(),
     }),
   ),

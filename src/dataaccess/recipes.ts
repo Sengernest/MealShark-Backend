@@ -1,24 +1,24 @@
-import { eq, or } from "drizzle-orm";
+import { eq, or, SQL } from "drizzle-orm";
 import db from "../db/db";
 import { foodsToRecipesTable, recipesTable } from "../db/schema";
 import { RecipeSchema } from "../dto/recipes";
 import { Recipe } from "../types";
 
-// Get all sample recipes together with recipes created by a given user
-async function getAllRecipes(userId: number): Promise<Recipe[]> {
+async function getRecipes(filterCondition: SQL): Promise<Recipe[]> {
   return await db.query.recipesTable.findMany({
-    where: or(eq(recipesTable.creatorId, userId), recipesTable.isSample),
+    where: filterCondition,
     with: {
       ingredients: {
         with: {
+          unit: true,
           food: {
             with: {
               units: {
                 with: {
-                  unit: true
-                }
-              }
-            }
+                  unit: true,
+                },
+              },
+            },
           },
         },
       },
@@ -26,47 +26,20 @@ async function getAllRecipes(userId: number): Promise<Recipe[]> {
   });
 }
 
+// Get all sample recipes together with recipes created by a given user
+async function getAllRecipes(userId: number): Promise<Recipe[]> {
+  return getRecipes(
+    or(eq(recipesTable.creatorId, userId), recipesTable.isSample)!,
+  );
+}
+
 async function getSampleRecipes(): Promise<Recipe[]> {
-  return await db.query.recipesTable.findMany({
-    where: eq(recipesTable.isSample, true),
-    with: {
-      ingredients: {
-        with: {
-          food: {
-            with: {
-              units: {
-                with: {
-                  unit: true
-                }
-              }
-            }
-          },
-        },
-      },
-    },
-  });
+  return getRecipes(eq(recipesTable.isSample, true));
 }
 
 // Get recipes created by a given user
 async function getUserRecipes(userId: number): Promise<Recipe[]> {
-  return await db.query.recipesTable.findMany({
-    where: eq(recipesTable.creatorId, userId),
-    with: {
-      ingredients: {
-        with: {
-          food: {
-            with: {
-              units: {
-                with: {
-                  unit: true
-                }
-              }
-            }
-          },
-        },
-      },
-    },
-  });
+  return getRecipes(eq(recipesTable.creatorId, userId));
 }
 
 async function getRecipe(recipeId: number): Promise<Recipe | undefined> {
@@ -75,14 +48,15 @@ async function getRecipe(recipeId: number): Promise<Recipe | undefined> {
     with: {
       ingredients: {
         with: {
+          unit: true,
           food: {
             with: {
               units: {
                 with: {
-                  unit: true
-                }
-              }
-            }
+                  unit: true,
+                },
+              },
+            },
           },
         },
       },

@@ -2,6 +2,7 @@ import { mealLogsRepository } from "../dataaccess/mealLogs";
 import { MealLogSchema } from "../dto/mealLogs";
 import { NotFoundError, UnauthorizedError } from "../errors/errors";
 import { MealLog, MealLogWithNutrition, MealSummary } from "../types";
+import { foodsService } from "./foods";
 import { sumMealNutrition, sumMealsNutrition, sumNutrition } from "./nutrition";
 
 function withNutrition(mealLog: MealLog): MealLogWithNutrition {
@@ -35,10 +36,15 @@ async function getDailyMealSummary(
 }
 
 async function createMealLog(
-  mealLog: MealLogSchema,
+  schema: MealLogSchema,
   userId: number,
 ): Promise<MealLogWithNutrition> {
-  const newLog = await mealLogsRepository.createMealLog(mealLog, userId);
+  // Check if food items have valid units
+  for (const foodItem of schema.foodItems) {
+    await foodsService.assertValidUnit(foodItem.foodId, foodItem.unitId);
+  }
+
+  const newLog = await mealLogsRepository.createMealLog(schema, userId);
   if (!newLog) {
     throw new NotFoundError();
   }
@@ -47,9 +53,14 @@ async function createMealLog(
 
 async function updateMealLog(
   mealLogId: number,
-  mealLogUpdateData: MealLogSchema,
+  schema: MealLogSchema,
   userId: number,
 ): Promise<MealLogWithNutrition> {
+  // Check if food items have valid units
+  for (const foodItem of schema.foodItems) {
+    await foodsService.assertValidUnit(foodItem.foodId, foodItem.unitId);
+  }
+
   const mealLog = await mealLogsRepository.getMealLog(mealLogId);
   if (!mealLog) {
     throw new NotFoundError();
@@ -60,7 +71,7 @@ async function updateMealLog(
   }
   const updatedLog = await mealLogsRepository.updateMealLog(
     mealLogId,
-    mealLogUpdateData,
+    schema,
   );
   if (!updatedLog) {
     throw new NotFoundError();
