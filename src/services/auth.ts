@@ -1,5 +1,5 @@
 import { usersRepository } from "../dataaccess/users";
-import { User, UserInput } from "../types";
+import { ChangePasswordInput, User, UserInput } from "../types";
 import jwt from "jsonwebtoken";
 import bcrypt from "bcrypt";
 
@@ -35,14 +35,19 @@ async function getUserById(userId: number): Promise<User> {
   return usersRepository.getUser(userId);
 }
 
-async function changePassword(userId: number, password: string): Promise<User> {
-  const hashedPassword = await bcrypt.hash(password, 10);
-  return usersRepository.changePassword(userId, hashedPassword);
+async function changePassword(userId: number, changePasswordInput: ChangePasswordInput): Promise<User> {
+  const user = await usersRepository.getUser(userId);
+  if (await bcrypt.compare(changePasswordInput.currentPassword, user.password)) {
+    const hashedPassword = await bcrypt.hash(changePasswordInput.newPassword, 10);
+    return usersRepository.changePassword(userId, hashedPassword);
+  } else {
+    throw new Error("Wrong current password");
+  }
 }
 
 export const authService = {
- signup,
- login,
+  signup,
+  login,
   getUserById,
   changePassword
 };

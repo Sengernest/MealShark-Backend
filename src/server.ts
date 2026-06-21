@@ -11,7 +11,7 @@ import {
   handleLogout,
   handleSignup,
 } from "./handlers/auth";
-import { handleUpdateProfile } from "./handlers/users";
+import { handleUpdateProfile } from "./handlers/profile";
 import {
   handleCreateNutritionGoals,
   handleDeleteNutritionGoals,

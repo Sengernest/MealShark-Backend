@@ -21,6 +21,11 @@ export type AuthUser = {
 };
 export type UserInput = typeof usersTable.$inferInsert;
 
+export type ChangePasswordInput = {
+  currentPassword: string,
+  newPassword: string, 
+}
+
 export type Profile = {
   name: string;
   email: string;

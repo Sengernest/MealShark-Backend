@@ -1,5 +1,6 @@
 import { Request, Response } from "express";
 import { authService } from "../services/auth";
+import { el } from "zod/locales";
 
 export async function handleSignup(req: Request, res: Response) {
   const { user, token } = await authService.signup(req.body);
@@ -28,6 +29,11 @@ export async function handleGetCurrentUser(req: Request, res: Response) {
 }
 
 export async function handleChangePassword(req: Request, res: Response) {
-  const user = await authService.changePassword(req.user!.id, req.body.password);
-  res.json(user); 
+  try {
+    const user = await authService.changePassword(req.user!.id, req.body);
+    res.json(user);
+  } catch (error) {
+    res.status(401).json({ error: "Wrong Current Password." });
+  }
 }
+
