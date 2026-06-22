@@ -19,6 +19,12 @@ export async function handleGetMealPlan(req: Request, res: Response) {
   res.json(mealPlan);
 }
 
+export async function handleGetAllMealPlans(req: Request, res: Response) {
+  const userId = req.user?.id!;
+  const mealPlans = await mealPlansService.getAllMealPlans(userId);
+  res.json(mealPlans);
+}
+
 export async function handleCreateMealPlan(req: Request, res: Response) {
   const userId = req.user?.id!;
   const mealPlan = await mealPlansService.createMealPlan(req.body, userId);
@@ -41,4 +47,12 @@ export async function handleDeleteMealPlan(req: Request, res: Response) {
   const userId = req.user?.id!;
   await mealPlansService.deleteMealPlan(mealPlanId, userId);
   res.json({ message: `Deleted meal plan: ${mealPlanId}` });
+}
+
+
+export async function handleActiveMealPlan(req: Request, res: Response) {
+  const mealPlanId = Number(req.params.id);
+  const userId = req.user?.id!;
+  const mealPlan = await mealPlansService.activateMealPlan(mealPlanId, userId);
+  res.json(mealPlan); 
 }

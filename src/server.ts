@@ -39,8 +39,10 @@ import {
   handleUpdateMealLog,
 } from "./handlers/mealLogs";
 import {
+  handleActiveMealPlan,
   handleCreateMealPlan,
   handleDeleteMealPlan,
+  handleGetAllMealPlans,
   handleGetMealPlan,
   handleGetSampleMealPlans,
   handleGetUserMealPlans,
@@ -108,6 +110,7 @@ app.put(
 app.delete("/recipes/:id", requireAuth, idValidator(), handleDeleteRecipe);
 
 // Meal plans
+app.get("/meal-plans", requireAuth, handleGetAllMealPlans);
 app.get("/meal-plans/samples", handleGetSampleMealPlans);
 app.get("/me/meal-plans", requireAuth, handleGetUserMealPlans);
 app.get("/meal-plans/:id", requireAuth, idValidator(), handleGetMealPlan);
@@ -125,6 +128,7 @@ app.put(
   handleUpdateMealPlan,
 );
 app.delete("/meal-plans/:id", requireAuth, idValidator(), handleDeleteMealPlan);
+app.patch("/meal-plans/:id", requireAuth, idValidator(), handleActiveMealPlan);
 
 // Meal logs
 app.get("/me/meal-logs/daily-summary", requireAuth, handleGetDailyMealSummary); // ?date=

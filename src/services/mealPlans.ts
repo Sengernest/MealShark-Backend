@@ -31,12 +31,21 @@ async function getUserMealPlans(userId: number) {
   return mealPlans.map(withNutrition);
 }
 
+
 async function getMealPlan(mealPlanId: number) {
   const mealPlan = await mealPlansRepository.getMealPlan(mealPlanId);
   if (!mealPlan) {
     throw new NotFoundError();
   }
   return withNutrition(mealPlan);
+}
+
+async function getAllMealPlans(userId: number) {
+  const mealPlans = await mealPlansRepository.getAllMealPlans(userId);
+    if (!mealPlans) {
+    throw new NotFoundError();
+  }
+  return mealPlans.map(withNutrition);
 }
 
 async function createMealPlan(schema: MealPlanSchema, userId: number) {
@@ -94,11 +103,18 @@ async function deleteMealPlan(mealPlanId: number, userId: number) {
   return mealPlansRepository.deleteMealPlan(mealPlanId);
 }
 
+async function activateMealPlan(mealPlanId: number, userId: number): Promise<MealPlan | undefined> {
+  const mealPlan = mealPlansRepository.activateMealPlan(mealPlanId, userId);
+  return mealPlan;
+
+}
 export const mealPlansService = {
   getSampleMealPlans,
   getUserMealPlans,
   getMealPlan,
+  getAllMealPlans,
   createMealPlan,
   updateMealPlan,
   deleteMealPlan,
+  activateMealPlan
 };

@@ -1,4 +1,4 @@
-import { eq, isNull, SQL } from "drizzle-orm";
+import { and, eq, isNull, or, SQL } from "drizzle-orm";
 import db from "../db/db";
 import {
   foodsToMealsTable,
@@ -113,6 +113,17 @@ async function getUserMealPlans(userId: number): Promise<MealPlan[]> {
   return getMealPlans(eq(mealPlansTable.creatorId, userId));
 }
 
+// Get all sample meal plans together with meal plans created by a given user
+async function getAllMealPlans(userId: number): Promise<MealPlan[] | undefined> {
+  return getMealPlans(
+    or(
+      eq(mealPlansTable.creatorId, userId),
+      isNull(mealPlansTable.creatorId),
+    )!,
+  );
+}
+
+
 async function createMealPlan(
   mealPlan: MealPlanSchema,
   creatorId: number,
@@ -124,7 +135,7 @@ async function createMealPlan(
         name: mealPlan.name,
         creatorId: creatorId,
         description: mealPlan.description,
-        isActive: false
+        isActive: false,
       })
       .returning();
 
@@ -165,9 +176,10 @@ async function updateMealPlan(
   await db.transaction(async (tx) => {
     const [updatedPlan] = await tx
       .update(mealPlansTable)
-      .set({ name: mealPlan.name,
+      .set({
+        name: mealPlan.name,
         description: mealPlan.description
-       })
+      })
       .where(eq(mealPlansTable.id, mealPlanId))
       .returning();
 
@@ -211,11 +223,41 @@ async function deleteMealPlan(mealPlanId: number) {
     .where(eq(mealPlansTable.id, mealPlanId));
 }
 
+
+
+async function activateMealPlan(
+  mealPlanId: number,
+  userId: number,
+): Promise<MealPlan | undefined> {
+  await db.transaction(async (tx) => {
+    // Deactivate all user's meal plans
+    await tx
+      .update(mealPlansTable)
+      .set({ isActive: false })
+      .where(eq(mealPlansTable.creatorId, userId));
+
+    // Activate the selected meal plan
+    await tx
+      .update(mealPlansTable)
+      .set({ isActive: true })
+      .where(
+        and(
+          eq(mealPlansTable.id, mealPlanId),
+          eq(mealPlansTable.creatorId, userId),
+        ),
+      );
+  });
+
+  return getMealPlan(mealPlanId);
+}
+
 export const mealPlansRepository = {
   getSampleMealPlans,
   getUserMealPlans,
+  getAllMealPlans,
   getMealPlan,
   createMealPlan,
   updateMealPlan,
   deleteMealPlan,
+  activateMealPlan
 };
