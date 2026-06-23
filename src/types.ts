@@ -47,6 +47,7 @@ export type SearchResult<T> = {
 
 export type RecipeFood = typeof foodsToRecipesTable.$inferSelect & {
   food: Food;
+  unit: Unit;
 };
 
 export type Recipe = typeof recipesTable.$inferSelect & {

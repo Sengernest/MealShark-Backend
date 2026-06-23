@@ -2,11 +2,11 @@ import z from "zod";
 
 export const recipeSchema = z.object({
   name: z.string(),
-  description: z.string().optional(),
-  instructions: z.string().optional(),
+  description: z.string().nullish(),
+  instructions: z.string().nullish(),
   servings: z.int().positive(),
-  prepTime: z.number().positive().optional(),
-  cookTime: z.number().positive().optional(),
+  prepTime: z.number().positive().nullish(),
+  cookTime: z.number().positive().nullish(),
   ingredients: z.array(
     z.object({
       foodId: z.int().positive(),
