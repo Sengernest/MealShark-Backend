@@ -136,6 +136,7 @@ async function createMealPlan(
         creatorId: creatorId,
         description: mealPlan.description,
         isActive: false,
+        targetCalories: mealPlan.targetCalories
       })
       .returning();
 
@@ -178,7 +179,8 @@ async function updateMealPlan(
       .update(mealPlansTable)
       .set({
         name: mealPlan.name,
-        description: mealPlan.description
+        description: mealPlan.description,
+        targetCalories: mealPlan.targetCalories
       })
       .where(eq(mealPlansTable.id, mealPlanId))
       .returning();
