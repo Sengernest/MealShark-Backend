@@ -33,6 +33,25 @@ export async function handleUpdateMealLog(req: Request, res: Response) {
   res.json(updatedMealLog);
 }
 
+export async function handleAddFoodToEntry(req: Request, res: Response) {
+  const entryId = Number(req.params.entryId)
+}
+
+export async function handleAddRecipeToEntry(req: Request, res: Response) {
+  const entryId = Number(req.params.entryId);
+  
+}
+
+export async function handleRemoveFoodFromEntry(req: Request, res: Response) {
+  const itemId = Number(req.params.itemId)
+
+}
+
+export async function handleRemoveRecipeFromEntry(req: Request, res: Response) {
+  const itemId = Number(req.params.itemId);
+
+}
+
 export async function handleDeleteMealLog(req: Request, res: Response) {
   const mealLogId = Number(req.params.id);
   const userId = req.user?.id!;

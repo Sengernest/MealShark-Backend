@@ -30,12 +30,16 @@ import {
 import { requireAuth } from "./middleware/auth";
 import { bodyValidator, idValidator } from "./middleware/validation";
 
-import { mealLogSchema } from "./dto/mealLogs";
+import { foodItemSchema, mealLogSchema, recipeItemSchema } from "./dto/mealLogs";
 import { handleGetFoods, handleSearchFoods } from "./handlers/foods";
 import {
+  handleAddFoodToEntry,
+  handleAddRecipeToEntry,
   handleCreateMealLog,
   handleDeleteMealLog,
   handleGetDailyMealSummary,
+  handleRemoveFoodFromEntry,
+  handleRemoveRecipeFromEntry,
   handleUpdateMealLog,
 } from "./handlers/mealLogs";
 import {
@@ -72,10 +76,14 @@ app.get("/", (req: Request, res: Response) => {
 // Auth
 app.post("/signup", bodyValidator(signupSchema), handleSignup);
 app.post("/login", bodyValidator(loginSchema), handleLogin);
-app.patch("/me/password", requireAuth, bodyValidator(changePasswordSchema), handleChangePassword);
+app.patch(
+  "/me/password",
+  requireAuth,
+  bodyValidator(changePasswordSchema),
+  handleChangePassword,
+);
 app.post("/logout", handleLogout);
 app.get("/me", requireAuth, handleGetCurrentUser);
-
 
 // Profile
 app.put(
@@ -145,6 +153,30 @@ app.put(
   bodyValidator(mealLogSchema),
   handleUpdateMealLog,
 );
+
+app.post(
+  "/meal-logs/:entryId/foods",
+  requireAuth,
+  bodyValidator(foodItemSchema),
+  handleAddFoodToEntry,
+); // Add food item to meal entry
+app.post(
+  "/meal-logs/:entryId/recipes",
+  requireAuth,
+  bodyValidator(recipeItemSchema),
+  handleAddRecipeToEntry,
+); // Add recipe item to meal entry
+app.delete(
+  "/meal-logs/:entryId/foods/:itemId",
+  requireAuth,
+  handleRemoveFoodFromEntry,
+); // Remove food item from meal entry
+app.delete(
+  "/meal-logs/:entryId/recipes/:itemId",
+  requireAuth,
+  handleRemoveRecipeFromEntry,
+); // Remove recipe item from meal entry
+
 app.delete("/meal-logs/:id", requireAuth, idValidator(), handleDeleteMealLog);
 
 // Nutrition goals
