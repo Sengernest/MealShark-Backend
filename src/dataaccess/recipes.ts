@@ -91,7 +91,9 @@ async function updateRecipe(
   await db.transaction(async (tx) => {
     await tx
       .update(recipesTable)
-      .set({ name: recipe.name })
+      .set({
+       ...recipe
+      })
       .where(eq(recipesTable.id, recipeId));
 
     // Delete all existing ingredients
