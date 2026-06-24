@@ -90,9 +90,9 @@ export type MealPlanMeal = typeof mealsTable.$inferSelect & {
   foodItems: MealFood[];
 };
 
-export type MealWithNutrition = MealPlanMeal & {
-  nutrition: Nutrition;
-};
+// export type MealWithNutrition = MealPlanMeal & {
+//   nutrition: Nutrition;
+// };
 
 export type MealPlan = typeof mealPlansTable.$inferSelect & {
   meals: MealPlanMeal[];
@@ -106,7 +106,7 @@ export type MealPlanWithNutrition = typeof mealPlansTable.$inferSelect & {
 // Food with amount, corresponding to the recipe or meal in which it is contained
 export type FoodItem = RecipeFood | MealFood | FoodEntry;
 
-export type MealSlot = (typeof mealSlotEnum.enumValues)[number]
+export type MealSlot = (typeof mealSlotEnum.enumValues)[number];
 
 export type FoodEntry = typeof foodEntriesTable.$inferSelect & {
   food: Food;
@@ -120,15 +120,25 @@ export type RecipeEntry = typeof recipeEntriesTable.$inferSelect & {
 export type Meal = {
   foodEntries: FoodEntry[];
   recipeEntries: RecipeEntry[];
+};
+
+export type MealWithNutrition = Meal & {
   nutrition: Nutrition;
 };
 
-export type MealItem = MealPlanMeal;
+export type MealItem = MealPlanMeal | Meal;
 
 export type MealLog = {
-  meals: Meal[];
   nutrition: Nutrition;
+  breakfast: MealWithNutrition;
+  lunch: MealWithNutrition;
+  dinner: MealWithNutrition;
+  snack: MealWithNutrition;
 };
+
+export type Consumable = {
+  nutrition: Nutrition
+}
 
 export type NutritionGoals = typeof nutritionGoalsTable.$inferSelect;
 

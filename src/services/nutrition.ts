@@ -1,5 +1,5 @@
 import { InvariantError } from "../errors/errors";
-import { FoodItem, MealItem, Nutrition } from "../types";
+import { Consumable, FoodItem, MealItem, Nutrition } from "../types";
 
 function roundValue(value: number) {
   return Math.round(value * 10) / 10;
@@ -28,8 +28,29 @@ function perServing(nutrition: Nutrition, servings: number): Nutrition {
   };
 }
 
+// Sums up nutrition across multiple entities with a Nutrition
+export function sumNutrition(...consumables: Consumable[]): Nutrition {
+  return consumables.reduce(
+    (acc, consumable) => {
+      acc.calories += consumable.nutrition.calories;
+      acc.macros.protein += consumable.nutrition.macros.protein;
+      acc.macros.carbs += consumable.nutrition.macros.carbs;
+      acc.macros.fat += consumable.nutrition.macros.fat;
+      return acc;
+    },
+    {
+      calories: 0,
+      macros: {
+        protein: 0,
+        fat: 0,
+        carbs: 0,
+      },
+    },
+  );
+}
+
 // Sums up the nutrition content in a list of foods, such as in a recipe or meal log
-export function sumNutrition(
+export function sumFoodsNutrition(
   foodItems: FoodItem[],
   servings?: number,
 ): Nutrition {
@@ -69,7 +90,9 @@ export function sumMealNutrition(meal: MealItem): Nutrition {
   const nutritionFromRecipes = roundNutrition(
     meal.recipeItems.reduce(
       (acc, recipeItem) => {
-        const recipeNutrition = sumNutrition(recipeItem.recipe.ingredients);
+        const recipeNutrition = sumFoodsNutrition(
+          recipeItem.recipe.ingredients,
+        );
         acc.calories += recipeItem.servings * recipeNutrition.calories;
         acc.macros.protein +=
           recipeItem.servings * recipeNutrition.macros.protein;
@@ -88,7 +111,7 @@ export function sumMealNutrition(meal: MealItem): Nutrition {
       },
     ),
   );
-  const nutritionFromFoods = sumNutrition(meal.foodItems);
+  const nutritionFromFoods = sumFoodsNutrition(meal.foodItems);
 
   return {
     calories: nutritionFromRecipes.calories + nutritionFromFoods.calories,

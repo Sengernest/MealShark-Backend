@@ -1,22 +1,20 @@
-import { and, eq, sql } from "drizzle-orm";
+import { and, eq } from "drizzle-orm";
 import db from "../db/db";
 import { foodEntriesTable, recipeEntriesTable } from "../db/schema";
-import {
-  FoodEntrySchema,
-  MealLogSchema,
-  RecipeEntrySchema,
-} from "../dto/mealLogs";
-import { FoodEntry, MealLog, RecipeEntry } from "../types";
+import { FoodEntrySchema, RecipeEntrySchema } from "../dto/mealLogs";
+import { FoodEntry, MealSlot, RecipeEntry } from "../types";
 
-// Gets all food entries logged by the user on the given date
+// Gets all food entries logged by the user on this date for this meal slot
 async function getFoodEntries(
   userId: number,
   logDate: string,
+  mealSlot: MealSlot,
 ): Promise<FoodEntry[]> {
   return db.query.foodEntriesTable.findMany({
     where: and(
       eq(foodEntriesTable.userId, userId),
       eq(foodEntriesTable.logDate, logDate),
+      eq(foodEntriesTable.mealSlot, mealSlot),
     ),
     with: {
       food: {
@@ -53,17 +51,20 @@ async function getFoodEntry(id: number): Promise<FoodEntry | undefined> {
 async function getRecipeEntries(
   userId: number,
   logDate: string,
+  mealSlot: MealSlot,
 ): Promise<RecipeEntry[]> {
   return db.query.recipeEntriesTable.findMany({
     where: and(
       eq(recipeEntriesTable.userId, userId),
       eq(recipeEntriesTable.logDate, logDate),
+      eq(foodEntriesTable.mealSlot, mealSlot),
     ),
     with: {
       recipe: {
         with: {
           ingredients: {
             with: {
+              unit: true,
               food: {
                 with: {
                   units: {
@@ -89,6 +90,7 @@ async function getRecipeEntry(id: number): Promise<RecipeEntry | undefined> {
         with: {
           ingredients: {
             with: {
+              unit: true,
               food: {
                 with: {
                   units: {

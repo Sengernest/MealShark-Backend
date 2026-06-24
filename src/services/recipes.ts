@@ -1,17 +1,14 @@
 import { recipesRepository } from "../dataaccess/recipes";
 import { RecipeSchema } from "../dto/recipes";
-import {
-  NotFoundError,
-  UnauthorizedError
-} from "../errors/errors";
+import { NotFoundError, UnauthorizedError } from "../errors/errors";
 import { Recipe, RecipeView } from "../types";
 import { foodsService } from "./foods";
-import { sumNutrition } from "./nutrition";
+import { sumFoodsNutrition } from "./nutrition";
 
 function withNutrition(recipe: Recipe): RecipeView {
   return {
     ...recipe,
-    nutrition: sumNutrition(recipe.ingredients, recipe.servings),
+    nutrition: sumFoodsNutrition(recipe.ingredients, recipe.servings),
   };
 }
 
@@ -48,15 +45,13 @@ async function getRecipe(
   return withNutrition(recipe);
 }
 
-
-
 async function createRecipe(
   recipe: RecipeSchema,
   userId: number,
 ): Promise<RecipeView> {
   // Check if ingredients have valid units
   for (const ingredient of recipe.ingredients) {
-    await foodsService.assertValidUnit(ingredient.foodId, ingredient.unitId)
+    await foodsService.assertValidUnit(ingredient.foodId, ingredient.unitId);
   }
   const newRecipe = await recipesRepository.createRecipe(recipe, userId);
   if (!newRecipe) {
