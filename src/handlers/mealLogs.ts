@@ -11,7 +11,7 @@ export async function handleGetDailyMealSummary(req: Request, res: Response) {
   }
   const mealLogs = await mealLogsService.getDailyMealSummary(
     userId,
-    result.data.logDate,
+    result.data.date,
   );
   res.json(mealLogs);
 }

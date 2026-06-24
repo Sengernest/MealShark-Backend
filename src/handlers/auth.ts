@@ -14,7 +14,7 @@ export async function handleLogin(req: Request, res: Response) {
     res.cookie("jwt", token, { httpOnly: true, maxAge: 72 * 60 * 60 * 1000 });
     res.json(user);
   } catch (error) {
-    res.status(401).json({ error: "Invalid credentials" });
+    res.status(401).json({ error });
   }
 }
 

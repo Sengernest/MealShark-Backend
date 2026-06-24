@@ -1,4 +1,4 @@
-import { and, eq } from "drizzle-orm";
+import { and, eq, sql } from "drizzle-orm";
 import db from "../db/db";
 import {
   foodsToMealLogsTable,
@@ -13,7 +13,7 @@ async function getMealLogs(userId: number, logDate: Date): Promise<MealLog[]> {
   return await db.query.mealLogsTable.findMany({
     where: and(
       eq(mealLogsTable.userId, userId),
-      eq(mealLogsTable.logDate, logDate),
+      sql`DATE(${mealLogsTable.logDate}) = DATE(${logDate})`,
     ),
     with: {
       recipeItems: {
@@ -26,10 +26,10 @@ async function getMealLogs(userId: number, logDate: Date): Promise<MealLog[]> {
                     with: {
                       units: {
                         with: {
-                          unit: true
-                        }
-                      }
-                    }
+                          unit: true,
+                        },
+                      },
+                    },
                   },
                   unit: true,
                 },
@@ -44,12 +44,12 @@ async function getMealLogs(userId: number, logDate: Date): Promise<MealLog[]> {
             with: {
               units: {
                 with: {
-                  unit: true
-                }
-              }
-            }
+                  unit: true,
+                },
+              },
+            },
           },
-          unit: true
+          unit: true,
         },
       },
     },

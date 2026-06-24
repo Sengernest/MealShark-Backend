@@ -2,7 +2,7 @@ import z from "zod";
 
 export const mealLogSchema = z.object({
   logDate: z.coerce.date(),
-  mealIndex: z.int().positive(),
+  mealIndex: z.int().nonnegative(),
   mealId: z.int().positive().optional(), // Not null if meal is from meal plan, null if ad-hoc meal
   recipeItems: z.array(
     z.object({
@@ -22,5 +22,5 @@ export const mealLogSchema = z.object({
 export type MealLogSchema = z.infer<typeof mealLogSchema>;
 
 export const mealLogsQuerySchema = z.object({
-  logDate: z.coerce.date(),
+  date: z.coerce.date(),
 });
