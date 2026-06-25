@@ -4,14 +4,16 @@ export class NotFoundError extends Error {}
 export class UnauthorizedError extends Error {}
 
 export class ValidationError extends Error {
-  public issues: $ZodIssue[]
+  public issues: $ZodIssue[];
 
   constructor(issues: $ZodIssue[]) {
-    super("Validation error")
-    this.issues = issues
+    super(issues[0]?.message ?? "Validation error");
+    this.issues = issues;
   }
 }
 
-export class BusinessError extends Error{} // Violation of business logic
+export class AuthenticationError extends Error {}
 
-export class InvariantError extends Error{} // Logically impossible state
+export class BusinessError extends Error {} // Violation of business logic
+
+export class InvariantError extends Error {} // Logically impossible state
