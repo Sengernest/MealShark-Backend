@@ -4,6 +4,7 @@ export const recipeSchema = z.object({
   name: z.string(),
   description: z.string().nullish(),
   instructions: z.string().nullish(),
+  category: z.string().nullish(),
   servings: z.int().positive(),
   prepTime: z.number().positive().nullish(),
   cookTime: z.number().positive().nullish(),

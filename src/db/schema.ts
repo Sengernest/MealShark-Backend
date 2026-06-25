@@ -64,6 +64,7 @@ export const recipesTable = pgTable("recipes", {
   servings: integer().notNull(),
   prepTime: integer(),
   cookTime: integer(),
+  category: text()
 });
 
 // Amount of a food item in a specific recipe, i.e. ingredients
