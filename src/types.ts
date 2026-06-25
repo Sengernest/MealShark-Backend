@@ -48,22 +48,6 @@ export type FoodUnit = typeof foodUnitsTable.$inferSelect & {
   unit?: Unit;
 };
 
-export type SearchResult<T> = {
-  item: T;
-  score: number; // Similarity score
-};
-
-export type RecipeFood = typeof foodsToRecipesTable.$inferSelect & {
-  food: Food;
-  unit: Unit;
-};
-
-export type RecipeBase = typeof recipesTable.$inferSelect;
-
-export type Recipe = RecipeBase & {
-  ingredients: RecipeFood[];
-};
-
 export type Nutrition = {
   calories: number;
   macros: {
@@ -73,8 +57,100 @@ export type Nutrition = {
   };
 };
 
-export type RecipeView = Recipe & {
+export type FoodItem = {
+  foodId: number;
+  food: Food;
+  unitId: number;
+  unit: Unit;
+  amount: number;
+};
+
+export type FoodItemWithNutrition = FoodItem & {
   nutrition: Nutrition;
+};
+
+export type Ingredient = typeof foodsToRecipesTable.$inferSelect & {
+  food: Food;
+  unit: Unit;
+};
+
+export type IngredientWithNutrition = Ingredient & {
+  nutrition: Nutrition;
+};
+
+export type Recipe = typeof recipesTable.$inferSelect & {
+  ingredients: Ingredient[];
+};
+
+export type RecipeWithNutrition = typeof recipesTable.$inferSelect & {
+  ingredients: IngredientWithNutrition[];
+  nutrition: Nutrition;
+};
+
+export type RecipeItem = {
+  recipeId: number;
+  recipe: Recipe;
+  servings: number;
+};
+
+export type RecipeItemWithNutrition = {
+  recipeId: number;
+  recipe: RecipeWithNutrition;
+  nutrition: Nutrition;
+};
+
+export type FoodEntry = typeof foodEntriesTable.$inferSelect & {
+  food: Food;
+  unit: Unit;
+};
+
+export type FoodEntryWithNutrition = FoodEntry & {
+  nutrition: Nutrition;
+};
+
+export type RecipeEntry = typeof recipeEntriesTable.$inferSelect & {
+  recipe: Recipe;
+};
+
+export type RecipeEntryWithNutrition =
+  typeof recipeEntriesTable.$inferSelect & {
+    recipe: RecipeWithNutrition;
+    nutrition: Nutrition;
+  };
+
+export type MealEntry = {
+  foodItems: FoodEntry[];
+  recipeItems: RecipeEntry[];
+};
+
+export type MealEntryWithNutrition = {
+  foodEntries: FoodEntryWithNutrition[];
+  recipeEntries: RecipeEntryWithNutrition[];
+  nutrition: Nutrition;
+};
+
+export type MealLog = {
+  nutrition: Nutrition;
+  breakfast: MealEntryWithNutrition;
+  lunch: MealEntryWithNutrition;
+  dinner: MealEntryWithNutrition;
+  snack: MealEntryWithNutrition;
+};
+
+export type MealSlot = (typeof mealSlotEnum.enumValues)[number];
+
+export type Consumable = {
+  nutrition: Nutrition;
+};
+
+export type Meal = {
+  foodItems: FoodItem[];
+  recipeItems: RecipeItem[];
+};
+
+export type MealPlanMeal = typeof mealsTable.$inferSelect & {
+  recipeItems: MealRecipe[];
+  foodItems: MealFood[];
 };
 
 export type MealRecipe = typeof recipesToMealsTable.$inferSelect & {
@@ -83,62 +159,17 @@ export type MealRecipe = typeof recipesToMealsTable.$inferSelect & {
 
 export type MealFood = typeof foodsToMealsTable.$inferSelect & {
   food: Food;
+  unit: Unit;
 };
-
-export type MealPlanMeal = typeof mealsTable.$inferSelect & {
-  recipeItems: MealRecipe[];
-  foodItems: MealFood[];
-};
-
-// export type MealWithNutrition = MealPlanMeal & {
-//   nutrition: Nutrition;
-// };
 
 export type MealPlan = typeof mealPlansTable.$inferSelect & {
   meals: MealPlanMeal[];
 };
 
 export type MealPlanWithNutrition = typeof mealPlansTable.$inferSelect & {
-  meals: MealWithNutrition[];
+  meals: MealEntryWithNutrition[];
   nutrition: Nutrition;
 };
-
-// Food with amount, corresponding to the recipe or meal in which it is contained
-export type FoodItem = RecipeFood | MealFood | FoodEntry;
-
-export type MealSlot = (typeof mealSlotEnum.enumValues)[number];
-
-export type FoodEntry = typeof foodEntriesTable.$inferSelect & {
-  food: Food;
-  // TODO: Contain nutrition
-};
-export type RecipeEntry = typeof recipeEntriesTable.$inferSelect & {
-  recipe: Recipe;
-  // TODO: Contain nutrition
-};
-
-export type Meal = {
-  foodEntries: FoodEntry[];
-  recipeEntries: RecipeEntry[];
-};
-
-export type MealWithNutrition = Meal & {
-  nutrition: Nutrition;
-};
-
-export type MealItem = MealPlanMeal | Meal;
-
-export type MealLog = {
-  nutrition: Nutrition;
-  breakfast: MealWithNutrition;
-  lunch: MealWithNutrition;
-  dinner: MealWithNutrition;
-  snack: MealWithNutrition;
-};
-
-export type Consumable = {
-  nutrition: Nutrition
-}
 
 export type NutritionGoals = typeof nutritionGoalsTable.$inferSelect;
 

@@ -6,7 +6,7 @@ import { foodsService } from "./foods";
 import {
   sumMealNutrition,
   sumMealsNutrition,
-  sumFoodsNutrition,
+  computeFoodItemsNutrition,
 } from "./nutrition";
 
 function withNutrition(mealPlan: MealPlan): MealPlanWithNutrition {
@@ -19,7 +19,7 @@ function withNutrition(mealPlan: MealPlan): MealPlanWithNutrition {
 
       recipeItems: meal.recipeItems.map((recipeItem) => ({
         ...recipeItem,
-        nutrition: sumFoodsNutrition(recipeItem.recipe.ingredients),
+        nutrition: computeFoodItemsNutrition(recipeItem.recipe.ingredients),
       })),
     })),
   };

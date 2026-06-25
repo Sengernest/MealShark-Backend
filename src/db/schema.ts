@@ -249,15 +249,16 @@ export const foodEntriesTable = pgTable("food_entries", {
     .notNull(),
 });
 
-export const foodEntriesToFoodsRelations = relations(
-  foodEntriesTable,
-  ({ one }) => ({
-    food: one(foodsTable, {
-      fields: [foodEntriesTable.foodId],
-      references: [foodsTable.id],
-    }),
+export const foodEntriesRelations = relations(foodEntriesTable, ({ one }) => ({
+  food: one(foodsTable, {
+    fields: [foodEntriesTable.foodId],
+    references: [foodsTable.id],
   }),
-);
+  unit: one(unitsTable, {
+    fields: [foodEntriesTable.unitId],
+    references: [unitsTable.id],
+  }),
+}));
 
 export const recipeEntriesTable = pgTable("recipe_entries", {
   id: integer("id").primaryKey().generatedAlwaysAsIdentity(),
@@ -272,13 +273,13 @@ export const recipeEntriesTable = pgTable("recipe_entries", {
   servings: integer().notNull(),
 });
 
-export const recipeEntriesToRecipesRelations = relations(
+export const recipeEntriesRelations = relations(
   recipeEntriesTable,
   ({ one }) => ({
     recipe: one(recipesTable, {
       fields: [recipeEntriesTable.recipeId],
       references: [recipesTable.id],
-    }),
+    })
   }),
 );
 

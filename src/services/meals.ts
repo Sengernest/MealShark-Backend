@@ -1,8 +1,8 @@
 import { mealsRepository } from "../dataaccess/meals";
-import { MealPlanMeal, MealWithNutrition } from "../types";
+import { MealPlanMeal, MealEntryWithNutrition } from "../types";
 import { sumMealNutrition } from "./nutrition";
 
-function withNutrition(meal: MealPlanMeal): MealWithNutrition {
+function withNutrition(meal: MealPlanMeal): MealEntryWithNutrition {
   return {
     ...meal,
     nutrition: sumMealNutrition(meal),
@@ -10,7 +10,7 @@ function withNutrition(meal: MealPlanMeal): MealWithNutrition {
 }
 
 // Get meal with computed calories
-async function getMeal(mealId: number): Promise<MealWithNutrition> {
+async function getMeal(mealId: number): Promise<MealEntryWithNutrition> {
   const meal = await mealsRepository.getMeal(mealId);
   return withNutrition(meal);
 }

@@ -1,31 +1,33 @@
 import { recipesRepository } from "../dataaccess/recipes";
 import { RecipeSchema } from "../dto/recipes";
 import { NotFoundError, UnauthorizedError } from "../errors/errors";
-import { Recipe, RecipeView } from "../types";
+import { Recipe, RecipeWithNutrition } from "../types";
 import { foodsService } from "./foods";
-import { sumFoodsNutrition } from "./nutrition";
+import { computeFoodItemsNutrition } from "./nutrition";
 
-function withNutrition(recipe: Recipe): RecipeView {
+function withNutrition(recipe: Recipe): RecipeWithNutrition {
   return {
     ...recipe,
-    nutrition: sumFoodsNutrition(recipe.ingredients, recipe.servings),
+    nutrition: computeFoodItemsNutrition(recipe.ingredients, recipe.servings),
   };
 }
 
 // Get all sample recipes together with recipes created by a given user
-async function getAllRecipes(userId: number): Promise<RecipeView[]> {
+async function getAllRecipes(userId: number): Promise<RecipeWithNutrition[]> {
   const recipes = await recipesRepository.getAllRecipes(userId);
   return recipes.map(withNutrition);
 }
 
 // Get sample recipes (accessible to any user)
-async function getSampleRecipes(userId?: number): Promise<RecipeView[]> {
+async function getSampleRecipes(
+  userId?: number,
+): Promise<RecipeWithNutrition[]> {
   const recipes = await recipesRepository.getSampleRecipes();
   return recipes.map(withNutrition);
 }
 
 // Get recipes created by a given user
-async function getUserRecipes(userId: number): Promise<RecipeView[]> {
+async function getUserRecipes(userId: number): Promise<RecipeWithNutrition[]> {
   const recipes = await recipesRepository.getUserRecipes(userId);
   return recipes.map(withNutrition);
 }
@@ -34,7 +36,7 @@ async function getUserRecipes(userId: number): Promise<RecipeView[]> {
 async function getRecipe(
   recipeId: number,
   userId: number,
-): Promise<RecipeView> {
+): Promise<RecipeWithNutrition> {
   const recipe = await recipesRepository.getRecipe(recipeId);
   if (!recipe) {
     throw new NotFoundError();
@@ -48,7 +50,7 @@ async function getRecipe(
 async function createRecipe(
   recipe: RecipeSchema,
   userId: number,
-): Promise<RecipeView> {
+): Promise<RecipeWithNutrition> {
   // Check if ingredients have valid units
   for (const ingredient of recipe.ingredients) {
     await foodsService.assertValidUnit(ingredient.foodId, ingredient.unitId);
@@ -64,7 +66,7 @@ async function updateRecipe(
   recipeId: number,
   recipeUpdateData: RecipeSchema,
   userId: number,
-): Promise<RecipeView> {
+): Promise<RecipeWithNutrition> {
   const recipe = await recipesRepository.getRecipe(recipeId);
   if (!recipe) {
     throw new NotFoundError();

@@ -1,13 +1,18 @@
 import { mealLogsRepository } from "../dataaccess/mealLogs";
-import { MealLog, MealSlot, MealWithNutrition } from "../types";
-import { sumMealNutrition, sumNutrition } from "./nutrition";
+import { MealEntryWithNutrition, MealLog, MealSlot } from "../types";
+import {
+  foodItemToWithNutrition,
+  multiplyNutrition,
+  recipeToWithNutrition,
+  sumNutrition
+} from "./nutrition";
 
-// Returns the list of meals logged by the user on the given date, including total nutrition
+// Returns the list of meals logged by the user on the given date, including total nutrition for the day
 async function getMealLog(userId: number, logDate: string): Promise<MealLog> {
-  const breakfast = await getMeal(userId, logDate, "breakfast");
-  const lunch = await getMeal(userId, logDate, "lunch");
-  const dinner = await getMeal(userId, logDate, "dinner");
-  const snack = await getMeal(userId, logDate, "snack");
+  const breakfast = await getMealEntry(userId, logDate, "breakfast");
+  const lunch = await getMealEntry(userId, logDate, "lunch");
+  const dinner = await getMealEntry(userId, logDate, "dinner");
+  const snack = await getMealEntry(userId, logDate, "snack");
   return {
     breakfast,
     lunch,
@@ -17,11 +22,12 @@ async function getMealLog(userId: number, logDate: string): Promise<MealLog> {
   };
 }
 
-async function getMeal(
+// Returns the food and recipe items logged for this meal slot, with total nutrition for this meal
+async function getMealEntry(
   userId: number,
   logDate: string,
   mealSlot: MealSlot,
-): Promise<MealWithNutrition> {
+): Promise<MealEntryWithNutrition> {
   const foodEntries = await mealLogsRepository.getFoodEntries(
     userId,
     logDate,
@@ -32,11 +38,28 @@ async function getMeal(
     logDate,
     mealSlot,
   );
-  const meal = { foodEntries, recipeEntries };
+
+  const foodEntriesWithNutrition = foodEntries.map((foodEntry) => ({
+    ...foodEntry,
+    nutrition: foodItemToWithNutrition(foodEntry).nutrition,
+  }));
+
+  const recipeEntriesWithNutrition = recipeEntries.map((recipeEntry) => {
+    const recipe = recipeToWithNutrition(recipeEntry.recipe);
+    return {
+      ...recipeEntry,
+      recipe,
+      nutrition: multiplyNutrition(recipe.nutrition, recipeEntry.servings),
+    };
+  });
+
   return {
-    foodEntries,
-    recipeEntries,
-    nutrition: sumMealNutrition(meal),
+    foodEntries: foodEntriesWithNutrition,
+    recipeEntries: recipeEntriesWithNutrition,
+    nutrition: sumNutrition(
+      ...foodEntriesWithNutrition,
+      ...recipeEntriesWithNutrition,
+    ),
   };
 }
 
