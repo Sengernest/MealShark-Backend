@@ -1,10 +1,23 @@
 import { mealLogsRepository } from "../dataaccess/mealLogs";
-import { MealEntryWithNutrition, MealLog, MealSlot } from "../types";
+import {
+  FoodEntrySchema,
+  RecipeEntrySchema,
+  recipeEntrySchema,
+} from "../dto/mealLogs";
+import { NotFoundError, UnauthorizedError } from "../errors/errors";
+import {
+  FoodEntry,
+  MealEntryWithNutrition,
+  MealLog,
+  MealSlot,
+  RecipeEntry,
+  RecipeEntryWithNutrition,
+} from "../types";
 import {
   foodItemToWithNutrition,
   multiplyNutrition,
   recipeToWithNutrition,
-  sumNutrition
+  sumNutrition,
 } from "./nutrition";
 
 // Returns the list of meals logged by the user on the given date, including total nutrition for the day
@@ -63,6 +76,108 @@ async function getMealEntry(
   };
 }
 
+async function addFoodEntry(
+  schema: FoodEntrySchema,
+  userId: number,
+): Promise<FoodEntry> {
+  const foodEntry = await mealLogsRepository.addFoodEntry(userId, schema);
+  if (!foodEntry) {
+    throw new NotFoundError();
+  }
+  return foodEntry;
+}
+
+async function addRecipeEntry(
+  schema: RecipeEntrySchema,
+  userId: number,
+): Promise<RecipeEntry> {
+  const recipeEntry = await mealLogsRepository.addRecipeEntry(userId, schema);
+  if (!recipeEntry) {
+    throw new NotFoundError();
+  }
+  return recipeEntry;
+}
+
+async function updateFoodEntry(
+  entryId: number,
+  schema: FoodEntrySchema,
+  userId: number,
+): Promise<FoodEntry> {
+  const entry = await mealLogsRepository.getFoodEntry(entryId);
+  if (!entry) {
+    throw new NotFoundError();
+  }
+  if (entry.userId !== userId) {
+    throw new UnauthorizedError();
+  }
+  const updatedEntry = await mealLogsRepository.updateFoodEntry(
+    entryId,
+    schema,
+  );
+  if (!updatedEntry) {
+    throw new NotFoundError();
+  }
+  return updatedEntry;
+}
+
+async function updateRecipeEntry(
+  entryId: number,
+  schema: RecipeEntrySchema,
+  userId: number,
+): Promise<RecipeEntry> {
+  const entry = await mealLogsRepository.getRecipeEntry(entryId);
+  if (!entry) {
+    throw new NotFoundError();
+  }
+  if (entry.userId !== userId) {
+    throw new UnauthorizedError();
+  }
+  const updatedEntry = await mealLogsRepository.updateRecipeEntry(
+    entryId,
+    schema,
+  );
+  if (!updatedEntry) {
+    throw new NotFoundError();
+  }
+  return updatedEntry;
+}
+
+async function removeFoodEntry(
+  entryId: number,
+  userId: number,
+): Promise<FoodEntry> {
+  const entry = await mealLogsRepository.getFoodEntry(entryId);
+  if (!entry) {
+    throw new NotFoundError();
+  }
+  if (entry.userId !== userId) {
+    throw new UnauthorizedError();
+  }
+  await mealLogsRepository.removeFoodEntry(entryId);
+  return entry;
+}
+
+async function removeRecipeEntry(
+  entryId: number,
+  userId: number,
+): Promise<RecipeEntry> {
+  const entry = await mealLogsRepository.getRecipeEntry(entryId);
+  if (!entry) {
+    throw new NotFoundError();
+  }
+  if (entry.userId !== userId) {
+    throw new UnauthorizedError();
+  }
+  await mealLogsRepository.removeRecipeEntry(entryId);
+  return entry;
+}
+
 export const mealLogsService = {
   getMealLog,
+  addFoodEntry,
+  addRecipeEntry,
+  updateFoodEntry,
+  updateRecipeEntry,
+  removeFoodEntry,
+  removeRecipeEntry,
 };

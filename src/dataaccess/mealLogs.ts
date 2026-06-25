@@ -17,6 +17,7 @@ async function getFoodEntries(
       eq(foodEntriesTable.mealSlot, mealSlot),
     ),
     with: {
+      unit: true,
       food: {
         with: {
           units: {
@@ -34,6 +35,7 @@ async function getFoodEntry(id: number): Promise<FoodEntry | undefined> {
   return db.query.foodEntriesTable.findFirst({
     where: eq(foodEntriesTable.id, id),
     with: {
+      unit: true,
       food: {
         with: {
           units: {
@@ -136,7 +138,11 @@ async function updateFoodEntry(
   entryId: number,
   schema: FoodEntrySchema,
 ): Promise<FoodEntry | undefined> {
-  const [foodEntry] = await db.update(foodEntriesTable).set(schema).returning();
+  const [foodEntry] = await db
+    .update(foodEntriesTable)
+    .set(schema)
+    .where(eq(foodEntriesTable.id, entryId))
+    .returning();
   return getFoodEntry(foodEntry.id);
 }
 
@@ -147,6 +153,7 @@ async function updateRecipeEntry(
   const [recipeEntry] = await db
     .update(recipeEntriesTable)
     .set(schema)
+    .where(eq(recipeEntriesTable.id, entryId))
     .returning();
   return getRecipeEntry(recipeEntry.id);
 }
@@ -166,6 +173,8 @@ async function removeRecipeEntry(entryId: number) {
 export const mealLogsRepository = {
   getFoodEntries,
   getRecipeEntries,
+  getFoodEntry,
+  getRecipeEntry,
   addFoodEntry,
   addRecipeEntry,
   updateFoodEntry,
