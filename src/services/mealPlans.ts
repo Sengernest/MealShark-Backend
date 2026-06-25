@@ -3,36 +3,31 @@ import { MealPlanSchema } from "../dto/mealPlans";
 import { NotFoundError, UnauthorizedError } from "../errors/errors";
 import { MealPlan, MealPlanWithNutrition } from "../types";
 import { foodsService } from "./foods";
-import {
-  sumMealNutrition,
-  sumMealsNutrition,
-  computeFoodItemsNutrition,
-} from "./nutrition";
 
-function withNutrition(mealPlan: MealPlan): MealPlanWithNutrition {
-  return {
-    ...mealPlan,
-    nutrition: sumMealsNutrition(mealPlan.meals),
-    meals: mealPlan.meals.map((meal) => ({
-      ...meal,
-      nutrition: sumMealNutrition(meal),
+// function withNutrition(mealPlan: MealPlan): MealPlanWithNutrition {
+//   return {
+//     ...mealPlan,
+//     nutrition: sumMealsNutrition(mealPlan.meals),
+//     meals: mealPlan.meals.map((meal) => ({
+//       ...meal,
+//       nutrition: sumMealNutrition(meal),
 
-      recipeItems: meal.recipeItems.map((recipeItem) => ({
-        ...recipeItem,
-        nutrition: computeFoodItemsNutrition(recipeItem.recipe.ingredients),
-      })),
-    })),
-  };
-}
+//       recipeItems: meal.recipeItems.map((recipeItem) => ({
+//         ...recipeItem,
+//         nutrition: computeFoodItemsNutrition(recipeItem.recipe.ingredients),
+//       })),
+//     })),
+//   };
+// }
 
 async function getSampleMealPlans() {
   const mealPlans = await mealPlansRepository.getSampleMealPlans();
-  return mealPlans.map(withNutrition);
+  return mealPlans;
 }
 
 async function getUserMealPlans(userId: number) {
   const mealPlans = await mealPlansRepository.getUserMealPlans(userId);
-  return mealPlans.map(withNutrition);
+  return mealPlans;
 }
 
 async function getMealPlan(mealPlanId: number) {
@@ -40,7 +35,7 @@ async function getMealPlan(mealPlanId: number) {
   if (!mealPlan) {
     throw new NotFoundError();
   }
-  return withNutrition(mealPlan);
+  return mealPlan;
 }
 
 async function getAllMealPlans(userId: number) {
@@ -48,7 +43,7 @@ async function getAllMealPlans(userId: number) {
   if (!mealPlans) {
     throw new NotFoundError();
   }
-  return mealPlans.map(withNutrition);
+  return mealPlans;
 }
 
 async function createMealPlan(schema: MealPlanSchema, userId: number) {
@@ -62,7 +57,7 @@ async function createMealPlan(schema: MealPlanSchema, userId: number) {
   if (!mealPlan) {
     throw new NotFoundError();
   }
-  return withNutrition(mealPlan);
+  return mealPlan;
 }
 
 async function updateMealPlan(
@@ -91,7 +86,7 @@ async function updateMealPlan(
   if (!updatedMealPlan) {
     throw new NotFoundError();
   }
-  return withNutrition(updatedMealPlan);
+  return updatedMealPlan;
 }
 
 async function deleteMealPlan(mealPlanId: number, userId: number) {
