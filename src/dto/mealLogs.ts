@@ -20,5 +20,5 @@ export type FoodEntrySchema = z.infer<typeof foodEntrySchema>;
 export type RecipeEntrySchema = z.infer<typeof recipeEntrySchema>;
 
 export const mealLogsQuerySchema = z.object({
-  date: z.coerce.date(),
+  date: z.string()
 });

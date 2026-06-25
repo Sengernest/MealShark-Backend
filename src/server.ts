@@ -1,9 +1,9 @@
 import express, { json, Request, Response } from "express";
 import { changePasswordSchema, loginSchema, signupSchema } from "./dto/auth";
-import { nutritionGoalsSchema } from "./dto/nutritionGoals";
 import { mealPlanSchema } from "./dto/mealPlans";
-import { recipeSchema } from "./dto/recipes";
+import { nutritionGoalsSchema } from "./dto/nutritionGoals";
 import { profileSchema } from "./dto/profile";
+import { recipeSchema } from "./dto/recipes";
 import {
   handleChangePassword,
   handleGetCurrentUser,
@@ -11,40 +11,37 @@ import {
   handleLogout,
   handleSignup,
 } from "./handlers/auth";
-import { handleUpdateProfile } from "./handlers/profile";
 import {
   handleCreateNutritionGoals,
   handleDeleteNutritionGoals,
   handleGetNutritionGoals,
   handleUpdateNutritionGoals,
 } from "./handlers/nutritionGoals";
+import { handleUpdateProfile } from "./handlers/profile";
 import {
   handleCreateRecipe,
   handleDeleteRecipe,
-  handleGetRecipe,
   handleGetAllRecipes,
+  handleGetRecipe,
+  handleGetSampleRecipes,
   handleGetUserRecipes,
   handleUpdateRecipe,
-  handleGetSampleRecipes,
 } from "./handlers/recipes";
 import { requireAuth } from "./middleware/auth";
 import { bodyValidator, idValidator } from "./middleware/validation";
 
-import {
-  foodEntrySchema,
-  mealLogSchema,
-  recipeEntrySchema,
-} from "./dto/mealLogs";
+import cors from "cors";
+import dotenv from "dotenv";
+import { foodEntrySchema, recipeEntrySchema } from "./dto/mealLogs";
 import { handleGetFoods, handleSearchFoods } from "./handlers/foods";
 import {
-  handleAddFoodToEntry,
-  handleAddRecipeToEntry,
-  handleCreateMealLog,
-  handleDeleteMealLog,
-  handleGetDailyMealSummary,
-  handleRemoveFoodFromEntry,
-  handleRemoveRecipeFromEntry,
-  handleUpdateMealLog,
+  handleAddFoodEntry,
+  handleAddRecipeEntry,
+  handleGetMealLog,
+  handleRemoveFoodEntry,
+  handleRemoveRecipeEntry,
+  handleUpdateFoodEntry,
+  handleUpdateRecipeEntry
 } from "./handlers/mealLogs";
 import {
   handleActiveMealPlan,
@@ -57,8 +54,6 @@ import {
   handleUpdateMealPlan,
 } from "./handlers/mealPlans";
 import { errorHandler } from "./middleware/error";
-import cors from "cors";
-import dotenv from "dotenv";
 dotenv.config();
 
 const app = express();
@@ -143,45 +138,45 @@ app.delete("/meal-plans/:id", requireAuth, idValidator(), handleDeleteMealPlan);
 app.patch("/meal-plans/:id", requireAuth, idValidator(), handleActiveMealPlan);
 
 // Meal logs
-app.get("/me/meal-logs/daily-summary", requireAuth, handleGetDailyMealSummary); // ?date=
+app.get("/meal-logs", requireAuth, handleGetMealLog); // ?date=
 app.post(
-  "/meal-logs",
-  requireAuth,
-  bodyValidator(mealLogSchema),
-  handleCreateMealLog,
-);
-app.put(
-  "/meal-logs/:id",
-  requireAuth,
-  idValidator(),
-  bodyValidator(mealLogSchema),
-  handleUpdateMealLog,
-);
-
-app.post(
-  "/meal-logs/:entryId/foods",
+  "/meal-logs/food-entries",
   requireAuth,
   bodyValidator(foodEntrySchema),
-  handleAddFoodToEntry,
-); // Add food item to meal entry
+  handleAddFoodEntry,
+);
 app.post(
-  "/meal-logs/:entryId/recipes",
+  "/meal-logs/recipe-entries",
   requireAuth,
   bodyValidator(recipeEntrySchema),
-  handleAddRecipeToEntry,
-); // Add recipe item to meal entry
-app.delete(
-  "/meal-logs/:entryId/foods/:itemId",
+  handleAddRecipeEntry,
+);
+app.put(
+  "/meal-logs/food-entries/:id",
   requireAuth,
-  handleRemoveFoodFromEntry,
-); // Remove food item from meal entry
-app.delete(
-  "/meal-logs/:entryId/recipes/:itemId",
+  idValidator(),
+  bodyValidator(foodEntrySchema),
+  handleUpdateFoodEntry,
+);
+app.put(
+  "/meal-logs/recipe-entries/:id",
   requireAuth,
-  handleRemoveRecipeFromEntry,
-); // Remove recipe item from meal entry
-
-app.delete("/meal-logs/:id", requireAuth, idValidator(), handleDeleteMealLog);
+  idValidator(),
+  bodyValidator(recipeEntrySchema),
+  handleUpdateRecipeEntry,
+);
+app.delete(
+  "/meal-logs/food-entries/:id",
+  requireAuth,
+  idValidator(),
+  handleRemoveFoodEntry,
+);
+app.delete(
+  "/meal-logs/recipe-entries/:id",
+  requireAuth,
+  idValidator(),
+  handleRemoveRecipeEntry,
+);
 
 // Nutrition goals
 app.post(
