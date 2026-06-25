@@ -7,12 +7,12 @@ import {
   recipesToMealsTable,
   foodsToMealsTable,
   nutritionGoalsTable,
-  recipesToMealLogsTable,
-  mealLogsTable,
-  foodsToMealLogsTable,
+  recipeEntriesTable,
+  foodEntriesTable,
   mealPlansTable,
   foodUnitsTable,
   unitsTable,
+  mealSlotEnum,
 } from "./db/schema";
 
 export type User = typeof usersTable.$inferSelect;
@@ -22,9 +22,9 @@ export type AuthUser = {
 export type UserInput = typeof usersTable.$inferInsert;
 
 export type ChangePasswordInput = {
-  currentPassword: string,
-  newPassword: string, 
-}
+  currentPassword: string;
+  newPassword: string;
+};
 
 export type Profile = {
   name: string;
@@ -32,11 +32,11 @@ export type Profile = {
   birthDate?: string;
   height?: number;
   gender?: "male" | "female";
-}
+};
 
 export type ProfileWithAge = Profile & {
   age?: number;
-}
+};
 
 export type Food = typeof foodsTable.$inferSelect & {
   units: FoodUnit[];
@@ -48,20 +48,6 @@ export type FoodUnit = typeof foodUnitsTable.$inferSelect & {
   unit?: Unit;
 };
 
-export type SearchResult<T> = {
-  item: T;
-  score: number; // Similarity score
-};
-
-export type RecipeFood = typeof foodsToRecipesTable.$inferSelect & {
-  food: Food;
-  unit: Unit;
-};
-
-export type Recipe = typeof recipesTable.$inferSelect & {
-  ingredients: RecipeFood[];
-};
-
 export type Nutrition = {
   calories: number;
   macros: {
@@ -71,8 +57,100 @@ export type Nutrition = {
   };
 };
 
-export type RecipeView = Recipe & {
+export type FoodItem = {
+  foodId: number;
+  food: Food;
+  unitId: number;
+  unit: Unit;
+  amount: number;
+};
+
+export type FoodItemWithNutrition = FoodItem & {
   nutrition: Nutrition;
+};
+
+export type Ingredient = typeof foodsToRecipesTable.$inferSelect & {
+  food: Food;
+  unit: Unit;
+};
+
+export type IngredientWithNutrition = Ingredient & {
+  nutrition: Nutrition;
+};
+
+export type Recipe = typeof recipesTable.$inferSelect & {
+  ingredients: Ingredient[];
+};
+
+export type RecipeWithNutrition = typeof recipesTable.$inferSelect & {
+  ingredients: IngredientWithNutrition[];
+  nutrition: Nutrition;
+};
+
+export type RecipeItem = {
+  recipeId: number;
+  recipe: Recipe;
+  servings: number;
+};
+
+export type RecipeItemWithNutrition = {
+  recipeId: number;
+  recipe: RecipeWithNutrition;
+  nutrition: Nutrition;
+};
+
+export type FoodEntry = typeof foodEntriesTable.$inferSelect & {
+  food: Food;
+  unit: Unit;
+};
+
+export type FoodEntryWithNutrition = FoodEntry & {
+  nutrition: Nutrition;
+};
+
+export type RecipeEntry = typeof recipeEntriesTable.$inferSelect & {
+  recipe: Recipe;
+};
+
+export type RecipeEntryWithNutrition =
+  typeof recipeEntriesTable.$inferSelect & {
+    recipe: RecipeWithNutrition;
+    nutrition: Nutrition;
+  };
+
+export type MealEntry = {
+  foodItems: FoodEntry[];
+  recipeItems: RecipeEntry[];
+};
+
+export type MealEntryWithNutrition = {
+  foodEntries: FoodEntryWithNutrition[];
+  recipeEntries: RecipeEntryWithNutrition[];
+  nutrition: Nutrition;
+};
+
+export type MealLog = {
+  nutrition: Nutrition;
+  breakfast: MealEntryWithNutrition;
+  lunch: MealEntryWithNutrition;
+  dinner: MealEntryWithNutrition;
+  snack: MealEntryWithNutrition;
+};
+
+export type MealSlot = (typeof mealSlotEnum.enumValues)[number];
+
+export type Consumable = {
+  nutrition: Nutrition;
+};
+
+export type Meal = {
+  foodItems: FoodItem[];
+  recipeItems: RecipeItem[];
+};
+
+export type MealPlanMeal = typeof mealsTable.$inferSelect & {
+  recipeItems: MealRecipe[];
+  foodItems: MealFood[];
 };
 
 export type MealRecipe = typeof recipesToMealsTable.$inferSelect & {
@@ -81,50 +159,15 @@ export type MealRecipe = typeof recipesToMealsTable.$inferSelect & {
 
 export type MealFood = typeof foodsToMealsTable.$inferSelect & {
   food: Food;
-};
-
-export type Meal = typeof mealsTable.$inferSelect & {
-  recipeItems: MealRecipe[];
-  foodItems: MealFood[];
-};
-
-export type MealWithNutrition = Meal & {
-  nutrition: Nutrition;
+  unit: Unit;
 };
 
 export type MealPlan = typeof mealPlansTable.$inferSelect & {
-  meals: Meal[];
+  meals: MealPlanMeal[];
 };
 
 export type MealPlanWithNutrition = typeof mealPlansTable.$inferSelect & {
-  meals: MealWithNutrition[];
-  nutrition: Nutrition;
-};
-
-// Food with amount, corresponding to the recipe or meal in which it is contained
-export type FoodItem = RecipeFood | MealFood | MealLogFood;
-
-export type MealLogRecipe = typeof recipesToMealLogsTable.$inferSelect & {
-  recipe: Recipe;
-};
-
-export type MealLogFood = typeof foodsToMealLogsTable.$inferSelect & {
-  food: Food;
-};
-
-export type MealLog = typeof mealLogsTable.$inferSelect & {
-  recipeItems: MealLogRecipe[];
-  foodItems: MealLogFood[];
-};
-
-export type MealLogWithNutrition = MealLog & {
-  nutrition: Nutrition;
-};
-
-export type MealItem = Meal | MealLog;
-
-export type MealSummary = {
-  meals: MealLogWithNutrition[];
+  meals: MealEntryWithNutrition[];
   nutrition: Nutrition;
 };
 
@@ -137,11 +180,7 @@ export type NutritionGoalsInput = {
   currentWeight: number;
   goalWeight: number;
   activityLevel: "sedentary" | "light" | "moderate" | "active" | "very_active";
-  goal: "bulk_0.5"
-  | "bulk_0.25"
-  | "maintenance"
-  | "cut_0.25"
-  | "cut_0.5";
+  goal: "bulk_0.5" | "bulk_0.25" | "maintenance" | "cut_0.25" | "cut_0.5";
 };
 
 export type NutritionGoalsInputWithNutrition = NutritionGoalsInput & {

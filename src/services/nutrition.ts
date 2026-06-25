@@ -1,5 +1,16 @@
 import { InvariantError } from "../errors/errors";
-import { FoodItem, MealItem, Nutrition } from "../types";
+import {
+  Consumable,
+  FoodItem,
+  FoodItemWithNutrition,
+  IngredientWithNutrition,
+  Meal,
+  Nutrition,
+  Recipe,
+  RecipeItem,
+  RecipeItemWithNutrition,
+  RecipeWithNutrition,
+} from "../types";
 
 function roundValue(value: number) {
   return Math.round(value * 10) / 10;
@@ -28,99 +39,89 @@ function perServing(nutrition: Nutrition, servings: number): Nutrition {
   };
 }
 
-// Sums up the nutrition content in a list of foods, such as in a recipe or meal log
-export function sumNutrition(
-  foodItems: FoodItem[],
-  servings?: number,
-): Nutrition {
-  const nutrition = foodItems.reduce(
-    (acc, foodItem) => {
-      const foodUnit = foodItem.food.units.find(
-        (foodUnit) => foodUnit.unitId === foodItem.unitId,
-      );
-      if (!foodUnit) {
-        throw new InvariantError(
-          `Food unit ${foodItem.unitId} is not supported for food ${foodItem.foodId}`,
-        );
-      }
-      const amountInGrams = foodItem.amount * foodUnit.gramsPerUnit;
-      const factor = amountInGrams / 100;
+export function multiplyNutrition(nutrition: Nutrition, factor: number): Nutrition {
+  return {
+    calories: nutrition.calories * factor,
+    macros: {
+      protein: nutrition.macros.protein * factor,
+      fat: nutrition.macros.fat * factor,
+      carbs: nutrition.macros.carbs * factor,
+    },
+  };
+}
 
-      acc.calories += factor * foodItem.food.calories;
-      acc.macros.protein += factor * foodItem.food.protein;
-      acc.macros.carbs += factor * foodItem.food.carbs;
-      acc.macros.fat += factor * foodItem.food.fat;
-
+// Sums up nutrition across multiple entities with a Nutrition
+export function sumNutrition(...consumables: Consumable[]): Nutrition {
+  return consumables.reduce(
+    (acc, consumable) => {
+      acc.calories += consumable.nutrition.calories;
+      acc.macros.protein += consumable.nutrition.macros.protein;
+      acc.macros.carbs += consumable.nutrition.macros.carbs;
+      acc.macros.fat += consumable.nutrition.macros.fat;
       return acc;
     },
     {
       calories: 0,
       macros: {
         protein: 0,
-        carbs: 0,
         fat: 0,
+        carbs: 0,
       },
     },
   );
-  return roundNutrition(servings ? perServing(nutrition, servings) : nutrition);
 }
 
-export function sumMealNutrition(meal: MealItem): Nutrition {
-  const nutritionFromRecipes = roundNutrition(
-    meal.recipeItems.reduce(
-      (acc, recipeItem) => {
-        const recipeNutrition = sumNutrition(recipeItem.recipe.ingredients);
-        acc.calories += recipeItem.servings * recipeNutrition.calories;
-        acc.macros.protein +=
-          recipeItem.servings * recipeNutrition.macros.protein;
-        acc.macros.carbs += recipeItem.servings * recipeNutrition.macros.carbs;
-        acc.macros.fat += recipeItem.servings * recipeNutrition.macros.fat;
-
-        return acc;
-      },
-      {
-        calories: 0,
-        macros: {
-          protein: 0,
-          carbs: 0,
-          fat: 0,
-        },
-      },
-    ),
+// Computes nutrition of a food based on amount and units
+export function foodItemToWithNutrition(
+  foodItem: FoodItem,
+): FoodItemWithNutrition {
+  const foodUnit = foodItem.food.units.find(
+    (foodUnit) => foodUnit.unitId === foodItem.unitId,
   );
-  const nutritionFromFoods = sumNutrition(meal.foodItems);
-
-  return {
-    calories: nutritionFromRecipes.calories + nutritionFromFoods.calories,
+  if (!foodUnit) {
+    throw new InvariantError(
+      `Food unit ${foodItem.unitId} is not supported for food ${foodItem.foodId}`,
+    );
+  }
+  const amountInGrams = foodItem.amount * foodUnit.gramsPerUnit;
+  const factor = amountInGrams / 100;
+  const nutrition = {
+    calories: factor * foodItem.food.calories,
     macros: {
-      protein:
-        nutritionFromRecipes.macros.protein + nutritionFromFoods.macros.protein,
-      carbs:
-        nutritionFromRecipes.macros.carbs + nutritionFromFoods.macros.carbs,
-      fat: nutritionFromRecipes.macros.fat + nutritionFromFoods.macros.fat,
+      protein: factor * foodItem.food.protein,
+      carbs: factor * foodItem.food.carbs,
+      fat: factor * foodItem.food.fat,
     },
+  };
+  return { ...foodItem, nutrition };
+}
+
+export function recipeToWithNutrition(recipe: Recipe): RecipeWithNutrition {
+  const ingredientsWithNutrition = recipe.ingredients.map((ingredient) => ({
+    ...ingredient,
+    nutrition: foodItemToWithNutrition(ingredient).nutrition,
+  }));
+  const ingredientsNutrition = sumNutrition(...ingredientsWithNutrition);
+  const nutrition = roundNutrition(perServing(ingredientsNutrition, recipe.servings));
+  return {
+    ...recipe,
+    ingredients: ingredientsWithNutrition,
+    nutrition,
   };
 }
 
-export function sumMealsNutrition(meals: MealItem[]): Nutrition {
-  return roundNutrition(
-    meals.reduce(
-      (acc, meal) => {
-        const mealNutrition = sumMealNutrition(meal);
-        acc.calories += mealNutrition.calories;
-        acc.macros.protein += mealNutrition.macros.protein;
-        acc.macros.carbs += mealNutrition.macros.carbs;
-        acc.macros.fat += mealNutrition.macros.fat;
-        return acc;
-      },
-      {
-        calories: 0,
-        macros: {
-          protein: 0,
-          carbs: 0,
-          fat: 0,
-        },
-      },
-    ),
+// Compute nutrition of recipe based on servings
+export function recipeItemToWithNutrition(
+  recipeItem: RecipeItem,
+): RecipeItemWithNutrition {
+  const recipeWithNutrition = recipeToWithNutrition(recipeItem.recipe);
+  const totalNutrition = multiplyNutrition(
+    recipeWithNutrition.nutrition,
+    recipeItem.servings,
   );
+  return {
+    ...recipeItem,
+    recipe: recipeWithNutrition,
+    nutrition: roundNutrition(totalNutrition),
+  };
 }

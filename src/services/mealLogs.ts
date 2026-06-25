@@ -1,100 +1,183 @@
 import { mealLogsRepository } from "../dataaccess/mealLogs";
-import { MealLogSchema } from "../dto/mealLogs";
+import {
+  FoodEntrySchema,
+  RecipeEntrySchema,
+  recipeEntrySchema,
+} from "../dto/mealLogs";
 import { NotFoundError, UnauthorizedError } from "../errors/errors";
-import { MealLog, MealLogWithNutrition, MealSummary } from "../types";
-import { foodsService } from "./foods";
-import { sumMealNutrition, sumMealsNutrition, sumNutrition } from "./nutrition";
+import {
+  FoodEntry,
+  MealEntryWithNutrition,
+  MealLog,
+  MealSlot,
+  RecipeEntry,
+  RecipeEntryWithNutrition,
+} from "../types";
+import {
+  foodItemToWithNutrition,
+  multiplyNutrition,
+  recipeToWithNutrition,
+  sumNutrition,
+} from "./nutrition";
 
-function withNutrition(mealLog: MealLog): MealLogWithNutrition {
+// Returns the list of meals logged by the user on the given date, including total nutrition for the day
+async function getMealLog(userId: number, logDate: string): Promise<MealLog> {
+  const breakfast = await getMealEntry(userId, logDate, "breakfast");
+  const lunch = await getMealEntry(userId, logDate, "lunch");
+  const dinner = await getMealEntry(userId, logDate, "dinner");
+  const snack = await getMealEntry(userId, logDate, "snack");
   return {
-    ...mealLog,
-    nutrition: sumMealNutrition(mealLog),
-    recipeItems: mealLog.recipeItems.map((recipeItem) => ({
-      ...recipeItem,
-      nutrition: sumNutrition(recipeItem.recipe.ingredients),
-    })),
+    breakfast,
+    lunch,
+    dinner,
+    snack,
+    nutrition: sumNutrition(breakfast, lunch, dinner, snack),
   };
 }
 
-async function getMealLogs(
+// Returns the food and recipe items logged for this meal slot, with total nutrition for this meal
+async function getMealEntry(
   userId: number,
-  logDate: Date,
-): Promise<MealLogWithNutrition[]> {
-  const mealLogs = await mealLogsRepository.getMealLogs(userId, logDate);
-  return mealLogs.map(withNutrition);
-}
+  logDate: string,
+  mealSlot: MealSlot,
+): Promise<MealEntryWithNutrition> {
+  const foodEntries = await mealLogsRepository.getFoodEntries(
+    userId,
+    logDate,
+    mealSlot,
+  );
+  const recipeEntries = await mealLogsRepository.getRecipeEntries(
+    userId,
+    logDate,
+    mealSlot,
+  );
 
-async function getDailyMealSummary(
-  userId: number,
-  date: Date,
-): Promise<MealSummary> {
-  const mealLogs = await getMealLogs(userId, date);
+  const foodEntriesWithNutrition = foodEntries.map((foodEntry) => ({
+    ...foodEntry,
+    nutrition: foodItemToWithNutrition(foodEntry).nutrition,
+  }));
+
+  const recipeEntriesWithNutrition = recipeEntries.map((recipeEntry) => {
+    const recipe = recipeToWithNutrition(recipeEntry.recipe);
+    return {
+      ...recipeEntry,
+      recipe,
+      nutrition: multiplyNutrition(recipe.nutrition, recipeEntry.servings),
+    };
+  });
+
   return {
-    meals: mealLogs,
-    nutrition: sumMealsNutrition(mealLogs),
+    foodEntries: foodEntriesWithNutrition,
+    recipeEntries: recipeEntriesWithNutrition,
+    nutrition: sumNutrition(
+      ...foodEntriesWithNutrition,
+      ...recipeEntriesWithNutrition,
+    ),
   };
 }
 
-async function createMealLog(
-  schema: MealLogSchema,
+async function addFoodEntry(
+  schema: FoodEntrySchema,
   userId: number,
-): Promise<MealLogWithNutrition> {
-  // Check if food items have valid units
-  for (const foodItem of schema.foodItems) {
-    await foodsService.assertValidUnit(foodItem.foodId, foodItem.unitId);
-  }
-
-  const newLog = await mealLogsRepository.createMealLog(schema, userId);
-  if (!newLog) {
+): Promise<FoodEntry> {
+  const foodEntry = await mealLogsRepository.addFoodEntry(userId, schema);
+  if (!foodEntry) {
     throw new NotFoundError();
   }
-  return withNutrition(newLog);
+  return foodEntry;
 }
 
-async function updateMealLog(
-  mealLogId: number,
-  schema: MealLogSchema,
+async function addRecipeEntry(
+  schema: RecipeEntrySchema,
   userId: number,
-): Promise<MealLogWithNutrition> {
-  // Check if food items have valid units
-  for (const foodItem of schema.foodItems) {
-    await foodsService.assertValidUnit(foodItem.foodId, foodItem.unitId);
-  }
-
-  const mealLog = await mealLogsRepository.getMealLog(mealLogId);
-  if (!mealLog) {
+): Promise<RecipeEntry> {
+  const recipeEntry = await mealLogsRepository.addRecipeEntry(userId, schema);
+  if (!recipeEntry) {
     throw new NotFoundError();
   }
-  // Ensure that the meal log can only be updated by the same user
-  if (mealLog.userId !== userId) {
+  return recipeEntry;
+}
+
+async function updateFoodEntry(
+  entryId: number,
+  schema: FoodEntrySchema,
+  userId: number,
+): Promise<FoodEntry> {
+  const entry = await mealLogsRepository.getFoodEntry(entryId);
+  if (!entry) {
+    throw new NotFoundError();
+  }
+  if (entry.userId !== userId) {
     throw new UnauthorizedError();
   }
-  const updatedLog = await mealLogsRepository.updateMealLog(
-    mealLogId,
+  const updatedEntry = await mealLogsRepository.updateFoodEntry(
+    entryId,
     schema,
   );
-  if (!updatedLog) {
+  if (!updatedEntry) {
     throw new NotFoundError();
   }
-  return withNutrition(updatedLog);
+  return updatedEntry;
 }
 
-async function deleteMealLog(mealLogId: number, userId: number) {
-  const mealLog = await mealLogsRepository.getMealLog(mealLogId);
-  if (!mealLog) {
+async function updateRecipeEntry(
+  entryId: number,
+  schema: RecipeEntrySchema,
+  userId: number,
+): Promise<RecipeEntry> {
+  const entry = await mealLogsRepository.getRecipeEntry(entryId);
+  if (!entry) {
     throw new NotFoundError();
   }
-  // Ensure that the meal log can only be deleted by the same user
-  if (mealLog.userId !== userId) {
+  if (entry.userId !== userId) {
     throw new UnauthorizedError();
   }
-  return mealLogsRepository.deleteMealLog(mealLogId);
+  const updatedEntry = await mealLogsRepository.updateRecipeEntry(
+    entryId,
+    schema,
+  );
+  if (!updatedEntry) {
+    throw new NotFoundError();
+  }
+  return updatedEntry;
+}
+
+async function removeFoodEntry(
+  entryId: number,
+  userId: number,
+): Promise<FoodEntry> {
+  const entry = await mealLogsRepository.getFoodEntry(entryId);
+  if (!entry) {
+    throw new NotFoundError();
+  }
+  if (entry.userId !== userId) {
+    throw new UnauthorizedError();
+  }
+  await mealLogsRepository.removeFoodEntry(entryId);
+  return entry;
+}
+
+async function removeRecipeEntry(
+  entryId: number,
+  userId: number,
+): Promise<RecipeEntry> {
+  const entry = await mealLogsRepository.getRecipeEntry(entryId);
+  if (!entry) {
+    throw new NotFoundError();
+  }
+  if (entry.userId !== userId) {
+    throw new UnauthorizedError();
+  }
+  await mealLogsRepository.removeRecipeEntry(entryId);
+  return entry;
 }
 
 export const mealLogsService = {
-  getMealLogs,
-  getDailyMealSummary,
-  createMealLog,
-  updateMealLog,
-  deleteMealLog,
+  getMealLog,
+  addFoodEntry,
+  addRecipeEntry,
+  updateFoodEntry,
+  updateRecipeEntry,
+  removeFoodEntry,
+  removeRecipeEntry,
 };

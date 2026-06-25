@@ -1,191 +1,184 @@
-import { and, eq, sql } from "drizzle-orm";
+import { and, eq } from "drizzle-orm";
 import db from "../db/db";
-import {
-  foodsToMealLogsTable,
-  mealLogsTable,
-  recipesToMealLogsTable,
-} from "../db/schema";
-import { MealLogSchema } from "../dto/mealLogs";
-import { MealLog } from "../types";
+import { foodEntriesTable, recipeEntriesTable } from "../db/schema";
+import { FoodEntrySchema, RecipeEntrySchema } from "../dto/mealLogs";
+import { FoodEntry, MealSlot, RecipeEntry } from "../types";
 
-// Get meal logs by a user on a given date
-async function getMealLogs(userId: number, logDate: Date): Promise<MealLog[]> {
-  return await db.query.mealLogsTable.findMany({
+// Gets all food entries logged by the user on this date for this meal slot
+async function getFoodEntries(
+  userId: number,
+  logDate: string,
+  mealSlot: MealSlot,
+): Promise<FoodEntry[]> {
+  return db.query.foodEntriesTable.findMany({
     where: and(
-      eq(mealLogsTable.userId, userId),
-      sql`DATE(${mealLogsTable.logDate}) = DATE(${logDate})`,
+      eq(foodEntriesTable.userId, userId),
+      eq(foodEntriesTable.logDate, logDate),
+      eq(foodEntriesTable.mealSlot, mealSlot),
     ),
     with: {
-      recipeItems: {
+      unit: true,
+      food: {
         with: {
-          recipe: {
+          units: {
             with: {
-              ingredients: {
+              unit: true,
+            },
+          },
+        },
+      },
+    },
+  });
+}
+
+async function getFoodEntry(id: number): Promise<FoodEntry | undefined> {
+  return db.query.foodEntriesTable.findFirst({
+    where: eq(foodEntriesTable.id, id),
+    with: {
+      unit: true,
+      food: {
+        with: {
+          units: {
+            with: {
+              unit: true,
+            },
+          },
+        },
+      },
+    },
+  });
+}
+
+// Gets all recipe entries logged by the user on the given date
+async function getRecipeEntries(
+  userId: number,
+  logDate: string,
+  mealSlot: MealSlot,
+): Promise<RecipeEntry[]> {
+  return db.query.recipeEntriesTable.findMany({
+    where: and(
+      eq(recipeEntriesTable.userId, userId),
+      eq(recipeEntriesTable.logDate, logDate),
+      eq(foodEntriesTable.mealSlot, mealSlot),
+    ),
+    with: {
+      recipe: {
+        with: {
+          ingredients: {
+            with: {
+              unit: true,
+              food: {
                 with: {
-                  food: {
+                  units: {
                     with: {
-                      units: {
-                        with: {
-                          unit: true,
-                        },
-                      },
+                      unit: true,
                     },
                   },
-                  unit: true,
                 },
               },
             },
           },
-        },
-      },
-      foodItems: {
-        with: {
-          food: {
-            with: {
-              units: {
-                with: {
-                  unit: true,
-                },
-              },
-            },
-          },
-          unit: true,
         },
       },
     },
   });
 }
 
-async function getMealLog(mealLogId: number): Promise<MealLog | undefined> {
-  return db.query.mealLogsTable.findFirst({
-    where: eq(mealLogsTable.id, mealLogId),
+async function getRecipeEntry(id: number): Promise<RecipeEntry | undefined> {
+  return db.query.recipeEntriesTable.findFirst({
+    where: eq(foodEntriesTable.id, id),
     with: {
-      recipeItems: {
+      recipe: {
         with: {
-          recipe: {
+          ingredients: {
             with: {
-              ingredients: {
+              unit: true,
+              food: {
                 with: {
-                  food: {
+                  units: {
                     with: {
-                      units: {
-                        with: {
-                          unit: true
-                        }
-                      }
-                    }
+                      unit: true,
+                    },
                   },
-                  unit: true
                 },
               },
             },
           },
         },
       },
-      foodItems: {
-        with: {
-          food: {
-            with: {
-              units: {
-                with: {
-                  unit: true
-                }
-              }
-            }
-          },
-          unit: true
-        },
-      },
     },
   });
 }
 
-async function createMealLog(
-  mealLog: MealLogSchema,
+// Logs a food entry for the user on the given date
+async function addFoodEntry(
   userId: number,
-): Promise<MealLog | undefined> {
-  const newMealLog = await db.transaction(async (tx) => {
-    const [newMealLog] = await tx
-      .insert(mealLogsTable)
-      .values({
-        userId,
-        logDate: mealLog.logDate,
-        mealIndex: mealLog.mealIndex,
-        mealId: mealLog.mealId,
-      })
-      .returning();
-    if (mealLog.recipeItems.length > 0) {
-      await tx.insert(recipesToMealLogsTable).values(
-        mealLog.recipeItems.map((recipeItem) => ({
-          ...recipeItem,
-          mealLogId: newMealLog.id,
-        })),
-      );
-    }
-    if (mealLog.foodItems.length > 0) {
-      await tx.insert(foodsToMealLogsTable).values(
-        mealLog.foodItems.map((foodItem) => ({
-          ...foodItem,
-          mealLogId: newMealLog.id,
-        })),
-      );
-    }
-    return newMealLog;
-  });
-  return getMealLog(newMealLog.id);
+  schema: FoodEntrySchema,
+): Promise<FoodEntry | undefined> {
+  const [foodEntry] = await db
+    .insert(foodEntriesTable)
+    .values({ ...schema, userId })
+    .returning();
+  return getFoodEntry(foodEntry.id);
 }
 
-async function updateMealLog(
-  mealLogId: number,
-  mealLog: MealLogSchema,
-): Promise<MealLog | undefined> {
-  await db.transaction(async (tx) => {
-    await tx
-      .update(mealLogsTable)
-      .set({
-        logDate: mealLog.logDate,
-        mealIndex: mealLog.mealIndex,
-        mealId: mealLog.mealId,
-      })
-      .where(eq(mealLogsTable.id, mealLogId));
-
-    // Delete all existing recipe items in the meal log
-    await tx
-      .delete(recipesToMealLogsTable)
-      .where(eq(recipesToMealLogsTable.mealLogId, mealLogId));
-    // Delete all existing food items in the meal log
-    await tx
-      .delete(foodsToMealLogsTable)
-      .where(eq(foodsToMealLogsTable.mealLogId, mealLogId));
-
-    if (mealLog.recipeItems.length > 0) {
-      await tx.insert(recipesToMealLogsTable).values(
-        mealLog.recipeItems.map((recipeItem) => ({
-          ...recipeItem,
-          mealLogId: mealLogId,
-        })),
-      );
-    }
-    if (mealLog.foodItems.length > 0) {
-      await tx.insert(foodsToMealLogsTable).values(
-        mealLog.foodItems.map((foodItem) => ({
-          ...foodItem,
-          mealLogId: mealLogId,
-        })),
-      );
-    }
-  });
-  return getMealLog(mealLogId);
+// Logs a recipe entry for the user on the given date
+async function addRecipeEntry(
+  userId: number,
+  schema: RecipeEntrySchema,
+): Promise<RecipeEntry | undefined> {
+  const [recipeEntry] = await db
+    .insert(recipeEntriesTable)
+    .values({ ...schema, userId })
+    .returning();
+  return getRecipeEntry(recipeEntry.id);
 }
 
-async function deleteMealLog(mealLogId: number) {
-  return await db.delete(mealLogsTable).where(eq(mealLogsTable.id, mealLogId));
+async function updateFoodEntry(
+  entryId: number,
+  schema: FoodEntrySchema,
+): Promise<FoodEntry | undefined> {
+  const [foodEntry] = await db
+    .update(foodEntriesTable)
+    .set(schema)
+    .where(eq(foodEntriesTable.id, entryId))
+    .returning();
+  return getFoodEntry(foodEntry.id);
+}
+
+async function updateRecipeEntry(
+  entryId: number,
+  schema: RecipeEntrySchema,
+): Promise<RecipeEntry | undefined> {
+  const [recipeEntry] = await db
+    .update(recipeEntriesTable)
+    .set(schema)
+    .where(eq(recipeEntriesTable.id, entryId))
+    .returning();
+  return getRecipeEntry(recipeEntry.id);
+}
+
+// Removes a food entry from the user's log
+async function removeFoodEntry(entryId: number) {
+  return db.delete(foodEntriesTable).where(eq(foodEntriesTable.id, entryId));
+}
+
+// Removes a recipe entry from the user's log
+async function removeRecipeEntry(entryId: number) {
+  return db
+    .delete(recipeEntriesTable)
+    .where(eq(recipeEntriesTable.id, entryId));
 }
 
 export const mealLogsRepository = {
-  getMealLog,
-  getMealLogs,
-  createMealLog,
-  updateMealLog,
-  deleteMealLog,
+  getFoodEntries,
+  getRecipeEntries,
+  getFoodEntry,
+  getRecipeEntry,
+  addFoodEntry,
+  addRecipeEntry,
+  updateFoodEntry,
+  updateRecipeEntry,
+  removeFoodEntry,
+  removeRecipeEntry,
 };

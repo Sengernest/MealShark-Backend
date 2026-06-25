@@ -3,7 +3,11 @@ import { MealPlanSchema } from "../dto/mealPlans";
 import { NotFoundError, UnauthorizedError } from "../errors/errors";
 import { MealPlan, MealPlanWithNutrition } from "../types";
 import { foodsService } from "./foods";
-import { sumMealNutrition, sumMealsNutrition, sumNutrition } from "./nutrition";
+import {
+  sumMealNutrition,
+  sumMealsNutrition,
+  computeFoodItemsNutrition,
+} from "./nutrition";
 
 function withNutrition(mealPlan: MealPlan): MealPlanWithNutrition {
   return {
@@ -15,7 +19,7 @@ function withNutrition(mealPlan: MealPlan): MealPlanWithNutrition {
 
       recipeItems: meal.recipeItems.map((recipeItem) => ({
         ...recipeItem,
-        nutrition: sumNutrition(recipeItem.recipe.ingredients),
+        nutrition: computeFoodItemsNutrition(recipeItem.recipe.ingredients),
       })),
     })),
   };
@@ -31,7 +35,6 @@ async function getUserMealPlans(userId: number) {
   return mealPlans.map(withNutrition);
 }
 
-
 async function getMealPlan(mealPlanId: number) {
   const mealPlan = await mealPlansRepository.getMealPlan(mealPlanId);
   if (!mealPlan) {
@@ -42,7 +45,7 @@ async function getMealPlan(mealPlanId: number) {
 
 async function getAllMealPlans(userId: number) {
   const mealPlans = await mealPlansRepository.getAllMealPlans(userId);
-    if (!mealPlans) {
+  if (!mealPlans) {
     throw new NotFoundError();
   }
   return mealPlans.map(withNutrition);
@@ -52,7 +55,7 @@ async function createMealPlan(schema: MealPlanSchema, userId: number) {
   // Check if food items have valid units
   for (const meal of schema.meals) {
     for (const foodItem of meal.foodItems) {
-      await foodsService.assertValidUnit(foodItem.foodId, foodItem.unitId)
+      await foodsService.assertValidUnit(foodItem.foodId, foodItem.unitId);
     }
   }
   const mealPlan = await mealPlansRepository.createMealPlan(schema, userId);
@@ -103,10 +106,12 @@ async function deleteMealPlan(mealPlanId: number, userId: number) {
   return mealPlansRepository.deleteMealPlan(mealPlanId);
 }
 
-async function activateMealPlan(mealPlanId: number, userId: number): Promise<MealPlan | undefined> {
+async function activateMealPlan(
+  mealPlanId: number,
+  userId: number,
+): Promise<MealPlan | undefined> {
   const mealPlan = mealPlansRepository.activateMealPlan(mealPlanId, userId);
   return mealPlan;
-
 }
 export const mealPlansService = {
   getSampleMealPlans,
@@ -116,5 +121,5 @@ export const mealPlansService = {
   createMealPlan,
   updateMealPlan,
   deleteMealPlan,
-  activateMealPlan
+  activateMealPlan,
 };
