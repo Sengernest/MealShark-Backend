@@ -1,8 +1,20 @@
 import { mealPlansRepository } from "../dataaccess/mealPlans";
 import { MealPlanSchema } from "../dto/mealPlans";
 import { NotFoundError, UnauthorizedError } from "../errors/errors";
-import { MealPlan, MealPlanWithNutrition } from "../types";
+import {
+  MealPlan,
+  MealPlanMeal,
+  MealPlanMealWithNutrition,
+  MealPlanView,
+  MealSlot,
+} from "../types";
 import { foodsService } from "./foods";
+import {
+  foodItemToWithNutrition,
+  multiplyNutrition,
+  recipeToWithNutrition,
+  sumNutrition,
+} from "./nutrition";
 
 // function withNutrition(mealPlan: MealPlan): MealPlanWithNutrition {
 //   return {
@@ -20,6 +32,62 @@ import { foodsService } from "./foods";
 //   };
 // }
 
+function getMealPlanMeal(
+  mealPlan: MealPlan,
+  mealSlot: MealSlot,
+): MealPlanMealWithNutrition {
+  const foodItems = mealPlan.foodItems.filter(
+    (foodItem) => foodItem.mealSlot === mealSlot,
+  );
+  const recipeItems = mealPlan.recipeItems.filter(
+    (recipeItem) => recipeItem.mealSlot === mealSlot,
+  );
+
+  const foodItemsWithNutrition = foodItems.map((foodItem) => ({
+    ...foodItem,
+    nutrition: foodItemToWithNutrition(foodItem).nutrition,
+  }));
+
+  const recipeItemsWithNutrition = recipeItems.map((recipeItem) => {
+    const recipe = recipeToWithNutrition(recipeItem.recipe);
+    return {
+      ...recipeItem,
+      recipe,
+      nutrition: multiplyNutrition(recipe.nutrition, recipeItem.servings),
+    };
+  });
+
+  return {
+    foodItems: foodItemsWithNutrition,
+    recipeItems: recipeItemsWithNutrition,
+    nutrition: sumNutrition(
+      ...foodItemsWithNutrition,
+      ...recipeItemsWithNutrition,
+    ),
+  };
+}
+
+async function getMealPlan(mealPlanId: number): Promise<MealPlanView> {
+  const mealPlan = await mealPlansRepository.getMealPlan(mealPlanId);
+  if (!mealPlan) {
+    throw new NotFoundError();
+  }
+
+  const breakfast = getMealPlanMeal(mealPlan, "breakfast");
+  const lunch = getMealPlanMeal(mealPlan, "lunch");
+  const dinner = getMealPlanMeal(mealPlan, "dinner");
+  const snack = getMealPlanMeal(mealPlan, "snack");
+
+  return {
+    ...mealPlan,
+    breakfast,
+    lunch,
+    dinner,
+    snack,
+    nutrition: sumNutrition(breakfast, lunch, dinner, snack),
+  };
+}
+
 async function getSampleMealPlans() {
   const mealPlans = await mealPlansRepository.getSampleMealPlans();
   return mealPlans;
@@ -28,14 +96,6 @@ async function getSampleMealPlans() {
 async function getUserMealPlans(userId: number) {
   const mealPlans = await mealPlansRepository.getUserMealPlans(userId);
   return mealPlans;
-}
-
-async function getMealPlan(mealPlanId: number) {
-  const mealPlan = await mealPlansRepository.getMealPlan(mealPlanId);
-  if (!mealPlan) {
-    throw new NotFoundError();
-  }
-  return mealPlan;
 }
 
 async function getAllMealPlans(userId: number) {
@@ -48,10 +108,8 @@ async function getAllMealPlans(userId: number) {
 
 async function createMealPlan(schema: MealPlanSchema, userId: number) {
   // Check if food items have valid units
-  for (const meal of schema.meals) {
-    for (const foodItem of meal.foodItems) {
-      await foodsService.assertValidUnit(foodItem.foodId, foodItem.unitId);
-    }
+  for (const foodItem of schema.foodItems) {
+    await foodsService.assertValidUnit(foodItem.foodId, foodItem.unitId);
   }
   const mealPlan = await mealPlansRepository.createMealPlan(schema, userId);
   if (!mealPlan) {
@@ -66,10 +124,8 @@ async function updateMealPlan(
   userId: number,
 ) {
   // Check if food items have valid units
-  for (const meal of schema.meals) {
-    for (const foodItem of meal.foodItems) {
-      await foodsService.assertValidUnit(foodItem.foodId, foodItem.unitId);
-    }
+  for (const foodItem of schema.foodItems) {
+    await foodsService.assertValidUnit(foodItem.foodId, foodItem.unitId);
   }
   const mealPlan = await mealPlansRepository.getMealPlan(mealPlanId);
   if (!mealPlan) {
