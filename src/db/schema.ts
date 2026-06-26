@@ -177,7 +177,7 @@ export const foodsToMealPlansRelations = relations(
   }),
 );
 
-export const recipesToMealPlansTable = pgTable("recipes_to_meals", {
+export const recipesToMealPlansTable = pgTable("recipes_to_meal_plans", {
   id: integer().primaryKey().generatedAlwaysAsIdentity(),
   recipeId: integer("recipe_id")
     .references(() => recipesTable.id)
