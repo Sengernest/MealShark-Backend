@@ -3,8 +3,6 @@ import {
   foodsTable,
   recipesTable,
   foodsToRecipesTable,
-  mealsTable,
-  recipesToMealsTable,
   foodsToMealPlansTable,
   nutritionGoalsTable,
   recipeEntriesTable,
@@ -13,6 +11,7 @@ import {
   foodUnitsTable,
   unitsTable,
   mealSlotEnum,
+  recipesToMealPlansTable,
 } from "./db/schema";
 
 export type User = typeof usersTable.$inferSelect;
@@ -148,27 +147,44 @@ export type Meal = {
   recipeItems: RecipeItem[];
 };
 
-export type MealPlanMeal = typeof mealsTable.$inferSelect & {
-  recipeItems: MealRecipe[];
-  foodItems: MealFood[];
-};
-
-export type MealRecipe = typeof recipesToMealsTable.$inferSelect & {
-  recipe: Recipe;
-};
-
-export type MealFood = typeof foodsToMealPlansTable.$inferSelect & {
+export type MealPlanFood = typeof foodsToMealPlansTable.$inferSelect & {
   food: Food;
   unit: Unit;
 };
 
-export type MealPlan = typeof mealPlansTable.$inferSelect & {
-  meals: MealPlanMeal[];
+export type MealPlanFoodWithNutrition = MealPlanFood & {
+  nutrition: Nutrition;
 };
 
-export type MealPlanWithNutrition = typeof mealPlansTable.$inferSelect & {
-  meals: MealEntryWithNutrition[];
+export type MealPlanRecipe = typeof recipesToMealPlansTable.$inferSelect & {
+  recipe: Recipe;
+};
+
+export type MealPlanRecipeWithNutrition =
+  typeof recipesToMealPlansTable.$inferSelect & {
+    recipe: RecipeWithNutrition;
+    nutrition: Nutrition;
+  };
+
+export type MealPlanMeal = {
+  foodItems: MealPlanFood[];
+  recipeItems: MealPlanRecipe[];
+};
+
+export type MealPlanMealWithNutrition = {
+  foodItems: MealPlanFoodWithNutrition[];
+  recipeItems: MealPlanRecipeWithNutrition[];
   nutrition: Nutrition;
+};
+
+export type MealPlanBase = typeof mealPlansTable.$inferSelect;
+
+export type MealPlan = MealPlanBase & {
+  nutrition: Nutrition
+  breakfast: MealPlanMealWithNutrition;
+  lunch: MealPlanMealWithNutrition;
+  dinner: MealPlanMealWithNutrition;
+  snack: MealPlanMealWithNutrition;
 };
 
 export type NutritionGoals = typeof nutritionGoalsTable.$inferSelect;
