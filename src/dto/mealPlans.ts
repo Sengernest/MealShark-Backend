@@ -3,7 +3,7 @@ import { mealSlotEnum } from "../db/schema";
 
 export const mealPlanSchema = z.object({
   name: z.string(),
-  description: z.string().optional(),
+  description: z.string().nullish(),
   targetCalories: z.int().positive(),
   foodItems: z.array(
     z.object({
