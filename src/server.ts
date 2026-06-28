@@ -34,6 +34,7 @@ import cors from "cors";
 import dotenv from "dotenv";
 import {
   foodEntrySchema,
+  importAllFromMealPlanSchema,
   importFromMealPlanSchema,
   recipeEntrySchema,
 } from "./dto/mealLogs";
@@ -42,6 +43,7 @@ import {
   handleAddFoodEntry,
   handleAddRecipeEntry,
   handleGetMealLog,
+  handleImportAllFromMealPlan,
   handleImportFromMealPlan,
   handleRemoveFoodEntry,
   handleRemoveRecipeEntry,
@@ -175,6 +177,12 @@ app.post(
   requireAuth,
   bodyValidator(importFromMealPlanSchema),
   handleImportFromMealPlan,
+);
+app.post(
+  "/meal-logs/import-all",
+  requireAuth,
+  bodyValidator(importAllFromMealPlanSchema),
+  handleImportAllFromMealPlan,
 );
 app.delete(
   "/meal-logs/food-entries/:id",

@@ -2,6 +2,7 @@ import { mealLogsRepository } from "../dataaccess/mealLogs";
 import { mealPlansRepository } from "../dataaccess/mealPlans";
 import {
   FoodEntrySchema,
+  ImportAllFromMealPlanSchema,
   ImportFromMealPlanSchema,
   RecipeEntrySchema,
   recipeEntrySchema,
@@ -174,25 +175,42 @@ async function removeRecipeEntry(
   return entry;
 }
 
-async function importFromMealPlanEntries(
+async function importFromMealPlan(
   userId: number,
-  schema: ImportFromMealPlanSchema
-) : Promise<MealEntryWithNutrition> {
-
+  schema: ImportFromMealPlanSchema,
+): Promise<MealEntryWithNutrition> {
   const activeMealPlan = await mealPlansRepository.getActiveMealPlan(userId);
 
   if (!activeMealPlan) {
-    throw new NotFoundError("No active meal plan. Please set a meal plan as active or create one.");
+    throw new NotFoundError(
+      "No active meal plan. Please set a meal plan as active or create one.",
+    );
   }
 
-  await mealLogsRepository.importFromMealPlan(
-    userId,
-    schema,
-    activeMealPlan,
-  );
-  
+  await mealLogsRepository.importFromMealPlan(userId, schema, activeMealPlan);
+
   const mealEntry = await getMealEntry(userId, schema.logDate, schema.mealSlot);
-  return mealEntry; 
+  return mealEntry;
+}
+
+async function importAllFromMealPlan(
+  userId: number,
+  schema: ImportAllFromMealPlanSchema,
+): Promise<MealLog> {
+
+  const mealSlots: MealSlot[] = ["breakfast", "lunch", "dinner", "snack"];
+
+  for (const mealSlot of mealSlots) {
+    await importFromMealPlan(
+      userId,
+      {
+        logDate: schema.logDate,
+        mealSlot,
+      },
+    );
+  }
+
+  return await getMealLog(userId, schema.logDate);
 }
 
 export const mealLogsService = {
@@ -203,5 +221,6 @@ export const mealLogsService = {
   updateRecipeEntry,
   removeFoodEntry,
   removeRecipeEntry,
-  importFromMealPlanEntries,
+  importFromMealPlan,
+  importAllFromMealPlan
 };

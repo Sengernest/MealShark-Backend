@@ -66,7 +66,19 @@ export async function handleImportFromMealPlan(
   res: Response,
 ) {
   const userId = Number(req.user?.id);
-  const entry = await mealLogsService.importFromMealPlanEntries(
+  const entry = await mealLogsService.importFromMealPlan(
+    userId,
+    req.body
+  );
+  res.json(entry);
+}
+
+export async function handleImportAllFromMealPlan(
+  req: Request,
+  res: Response,
+) {
+  const userId = Number(req.user?.id);
+  const entry = await mealLogsService.importAllFromMealPlan(
     userId,
     req.body
   );
