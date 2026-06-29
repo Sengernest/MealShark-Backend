@@ -1,6 +1,10 @@
 import { eq, or, SQL } from "drizzle-orm";
 import db from "../db/db";
-import { foodsToRecipesTable, recipesTable } from "../db/schema";
+import {
+  foodsToRecipesTable,
+  recipesTable,
+  savedRecipesTable,
+} from "../db/schema";
 import { RecipeSchema } from "../dto/recipes";
 import { Recipe } from "../types";
 
@@ -40,6 +44,34 @@ async function getSampleRecipes(): Promise<Recipe[]> {
 // Get recipes created by a given user
 async function getUserRecipes(userId: number): Promise<Recipe[]> {
   return getRecipes(eq(recipesTable.creatorId, userId));
+}
+
+// Get recipes saved by a user
+async function getUserSavedRecipes(userId: number): Promise<Recipe[]> {
+  const savedRecipes = await db.query.savedRecipesTable.findMany({
+    where: eq(savedRecipesTable.userId, userId),
+    with: {
+      recipe: {
+        with: {
+          ingredients: {
+            with: {
+              unit: true,
+              food: {
+                with: {
+                  units: {
+                    with: {
+                      unit: true,
+                    },
+                  },
+                },
+              },
+            },
+          },
+        },
+      },
+    },
+  });
+  return savedRecipes.map((savedRecipe) => savedRecipe.recipe);
 }
 
 async function getRecipe(recipeId: number): Promise<Recipe | undefined> {
@@ -92,7 +124,7 @@ async function updateRecipe(
     await tx
       .update(recipesTable)
       .set({
-       ...recipe
+        ...recipe,
       })
       .where(eq(recipesTable.id, recipeId));
 
@@ -119,6 +151,7 @@ export const recipesRepository = {
   getAllRecipes,
   getSampleRecipes,
   getUserRecipes,
+  getUserSavedRecipes,
   getRecipe,
   createRecipe,
   updateRecipe,

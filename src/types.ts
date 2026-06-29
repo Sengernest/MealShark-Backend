@@ -12,6 +12,7 @@ import {
   unitsTable,
   mealSlotEnum,
   recipesToMealPlansTable,
+  savedRecipesTable,
 } from "./db/schema";
 
 export type User = typeof usersTable.$inferSelect;
@@ -85,6 +86,10 @@ export type RecipeWithNutrition = typeof recipesTable.$inferSelect & {
   ingredients: IngredientWithNutrition[];
   nutrition: Nutrition;
 };
+
+export type RecipeView = RecipeWithNutrition & {
+  isSaved: boolean
+}
 
 export type RecipeItem = {
   recipeId: number;
@@ -180,7 +185,7 @@ export type MealPlanMealWithNutrition = {
 export type MealPlan = typeof mealPlansTable.$inferSelect & {
   foodItems: MealPlanFood[];
   recipeItems: MealPlanRecipe[];
-}
+};
 
 export type MealPlanView = typeof mealPlansTable.$inferSelect & {
   nutrition: Nutrition;

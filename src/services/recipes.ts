@@ -1,16 +1,34 @@
 import { recipesRepository } from "../dataaccess/recipes";
 import { RecipeSchema } from "../dto/recipes";
-import { BusinessError, NotFoundError, UnauthorizedError } from "../errors/errors";
-import { Recipe, RecipeWithNutrition } from "../types";
+import {
+  BusinessError,
+  NotFoundError,
+  UnauthorizedError,
+} from "../errors/errors";
+import { RecipeView, RecipeWithNutrition } from "../types";
 import { foodsService } from "./foods";
 import { recipeToWithNutrition } from "./nutrition";
 
-const withNutrition = recipeToWithNutrition
+const withNutrition = recipeToWithNutrition;
+
+async function withIsSaved(
+  recipe: RecipeWithNutrition,
+  userId?: number,
+): Promise<RecipeView> {
+  if (!userId) {
+    return { ...recipe, isSaved: false };
+  }
+  const savedRecipes = await recipesRepository.getUserSavedRecipes(userId);
+  const savedRecipeIds = new Set(savedRecipes.map((recipe) => recipe.id));
+  return { ...recipe, isSaved: savedRecipeIds.has(recipe.id) };
+}
 
 // Get all sample recipes together with recipes created by a given user
 async function getAllRecipes(userId: number): Promise<RecipeWithNutrition[]> {
   const recipes = await recipesRepository.getAllRecipes(userId);
-  return recipes.map(withNutrition);
+  return Promise.all(
+    recipes.map((recipe) => withIsSaved(withNutrition(recipe), userId)),
+  );
 }
 
 // Get sample recipes (accessible to any user)
@@ -18,20 +36,30 @@ async function getSampleRecipes(
   userId?: number,
 ): Promise<RecipeWithNutrition[]> {
   const recipes = await recipesRepository.getSampleRecipes();
-  return recipes.map(withNutrition);
+  return Promise.all(
+    recipes.map((recipe) => withIsSaved(withNutrition(recipe), userId)),
+  );
 }
 
-// Get recipes created by a given user
+// Get recipes created by user
 async function getUserRecipes(userId: number): Promise<RecipeWithNutrition[]> {
   const recipes = await recipesRepository.getUserRecipes(userId);
-  return recipes.map(withNutrition);
+  return Promise.all(
+    recipes.map((recipe) => withIsSaved(withNutrition(recipe), userId)),
+  );
+}
+
+// Get recipes saved by user
+async function getUserSavedRecipes(userId: number): Promise<RecipeView[]> {
+  const recipes = await recipesRepository.getUserSavedRecipes(userId);
+  return recipes.map((recipe) => ({ ...withNutrition(recipe), isSaved: true }));
 }
 
 // Get recipe with computed calories
 async function getRecipe(
   recipeId: number,
   userId: number,
-): Promise<RecipeWithNutrition> {
+): Promise<RecipeView> {
   const recipe = await recipesRepository.getRecipe(recipeId);
   if (!recipe) {
     throw new NotFoundError();
@@ -39,7 +67,7 @@ async function getRecipe(
   if (!recipe.isSample && recipe.creatorId !== userId) {
     throw new UnauthorizedError();
   }
-  return withNutrition(recipe);
+  return withIsSaved(withNutrition(recipe), userId);
 }
 
 async function createRecipe(
@@ -67,7 +95,7 @@ async function updateRecipe(
     throw new NotFoundError();
   }
   if (recipe.isSample) {
-    throw new BusinessError("Cannot edit sample recipe")
+    throw new BusinessError("Cannot edit sample recipe");
   }
   // Ensure that the recipe can only be updated by its creator
   if (recipe.creatorId !== userId) {
@@ -104,6 +132,7 @@ export const recipesService = {
   getAllRecipes,
   getSampleRecipes,
   getUserRecipes,
+  getUserSavedRecipes,
   getRecipe,
   createRecipe,
   updateRecipe,

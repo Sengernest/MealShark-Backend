@@ -39,7 +39,10 @@ function perServing(nutrition: Nutrition, servings: number): Nutrition {
   };
 }
 
-export function multiplyNutrition(nutrition: Nutrition, factor: number): Nutrition {
+export function multiplyNutrition(
+  nutrition: Nutrition,
+  factor: number,
+): Nutrition {
   return {
     calories: nutrition.calories * factor,
     macros: {
@@ -102,7 +105,9 @@ export function recipeToWithNutrition(recipe: Recipe): RecipeWithNutrition {
     nutrition: foodItemToWithNutrition(ingredient).nutrition,
   }));
   const ingredientsNutrition = sumNutrition(...ingredientsWithNutrition);
-  const nutrition = roundNutrition(perServing(ingredientsNutrition, recipe.servings));
+  const nutrition = roundNutrition(
+    perServing(ingredientsNutrition, recipe.servings),
+  );
   return {
     ...recipe,
     ingredients: ingredientsWithNutrition,
