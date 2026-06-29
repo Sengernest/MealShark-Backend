@@ -126,6 +126,14 @@ async function deleteRecipe(recipeId: number, userId: number) {
   return recipesRepository.deleteRecipe(recipeId);
 }
 
+async function saveRecipe(recipeId: number, userId: number) {
+  await recipesRepository.saveRecipe(recipeId, userId);
+}
+
+async function unsaveRecipe(recipeId: number, userId: number) {
+  await recipesRepository.unsaveRecipe(recipeId, userId);
+}
+
 export const recipesService = {
   getAllRecipes,
   getSampleRecipes,
@@ -135,4 +143,6 @@ export const recipesService = {
   createRecipe,
   updateRecipe,
   deleteRecipe,
+  saveRecipe,
+  unsaveRecipe,
 };

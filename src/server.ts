@@ -26,6 +26,8 @@ import {
   handleGetSampleRecipes,
   handleGetUserRecipes,
   handleGetUserSavedRecipes,
+  handleSaveRecipe,
+  handleUnsaveRecipe,
   handleUpdateRecipe,
 } from "./handlers/recipes";
 import { requireAuth } from "./middleware/auth";
@@ -124,6 +126,8 @@ app.put(
   handleUpdateRecipe,
 );
 app.delete("/recipes/:id", requireAuth, idValidator(), handleDeleteRecipe);
+app.post("/recipes/:id/save", requireAuth, idValidator(), handleSaveRecipe)
+app.delete("/recipes/:id/save", requireAuth, idValidator(), handleUnsaveRecipe)
 
 // Meal plans
 app.get("/meal-plans", requireAuth, handleGetAllMealPlans);

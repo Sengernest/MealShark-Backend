@@ -1,4 +1,4 @@
-import { eq, or, SQL } from "drizzle-orm";
+import { and, eq, or, SQL } from "drizzle-orm";
 import db from "../db/db";
 import {
   foodsToRecipesTable,
@@ -147,6 +147,21 @@ async function deleteRecipe(recipeId: number) {
   return await db.delete(recipesTable).where(eq(recipesTable.id, recipeId));
 }
 
+async function saveRecipe(recipeId: number, userId: number) {
+  return db.insert(savedRecipesTable).values({ recipeId, userId });
+}
+
+async function unsaveRecipe(recipeId: number, userId: number) {
+  return db
+    .delete(savedRecipesTable)
+    .where(
+      and(
+        eq(savedRecipesTable.recipeId, recipeId),
+        eq(savedRecipesTable.userId, userId),
+      ),
+    );
+}
+
 export const recipesRepository = {
   getAllRecipes,
   getSampleRecipes,
@@ -156,4 +171,6 @@ export const recipesRepository = {
   createRecipe,
   updateRecipe,
   deleteRecipe,
+  saveRecipe,
+  unsaveRecipe,
 };

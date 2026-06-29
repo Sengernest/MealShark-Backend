@@ -55,3 +55,17 @@ export async function handleDeleteRecipe(req: Request, res: Response) {
   await recipesService.deleteRecipe(recipeId, userId);
   res.json({ message: `Deleted recipe: ${recipeId}` });
 }
+
+export async function handleSaveRecipe(req: Request, res: Response) {
+  const recipeId = Number(req.params.id);
+  const userId = req.user?.id!;
+  await recipesService.saveRecipe(recipeId, userId)
+  res.json({message: `Saved recipe: ${recipeId}`})
+}
+
+export async function handleUnsaveRecipe(req: Request, res: Response) {
+  const recipeId = Number(req.params.id);
+  const userId = req.user?.id!;
+  await recipesService.unsaveRecipe(recipeId, userId);
+  res.json({ message: `Unsaved recipe: ${recipeId}` });
+}
