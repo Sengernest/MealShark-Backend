@@ -242,6 +242,29 @@ async function importFromMealPlan(
   });
 }
 
+
+async function clearMealLog(userId: number, logDate: string) {
+  await db.transaction(async (tx) => {
+    await tx
+      .delete(foodEntriesTable)
+      .where(
+        and(
+          eq(foodEntriesTable.userId, userId),
+          eq(foodEntriesTable.logDate, logDate),
+        ),
+      );
+
+    await tx
+      .delete(recipeEntriesTable)
+      .where(
+        and(
+          eq(recipeEntriesTable.userId, userId),
+          eq(recipeEntriesTable.logDate, logDate),
+        ),
+      );
+  });
+}
+
 export const mealLogsRepository = {
   getFoodEntries,
   getRecipeEntries,

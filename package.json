@@ -32,6 +32,7 @@
     "import": "ts-node src/db/import.ts",
     "seed:all": "ts-node src/db/seed/all.ts",
     "seed:users": "ts-node src/db/seed/users.ts",
-    "seed:recipes": "ts-node src/db/seed/recipes.ts"
+    "seed:recipes": "ts-node src/db/seed/recipes.ts",
+    "seed:mealPlans": "ts-node src/db/seed/mealPlans.ts"
   }
 }
