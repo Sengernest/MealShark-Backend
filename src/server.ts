@@ -45,6 +45,7 @@ import { handleGetFoods, handleSearchFoods } from "./handlers/foods";
 import {
   handleAddFoodEntry,
   handleAddRecipeEntry,
+  handleDeleteAllEntries,
   handleGetMealLog,
   handleImportAllFromMealPlan,
   handleImportFromMealPlan,
@@ -201,6 +202,12 @@ app.delete(
   requireAuth,
   idValidator(),
   handleRemoveRecipeEntry,
+);
+app.delete(
+  "/meal-logs",
+  requireAuth,
+  bodyValidator(importAllFromMealPlanSchema),
+  handleDeleteAllEntries,
 );
 
 // Nutrition goals

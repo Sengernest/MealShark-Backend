@@ -3,6 +3,7 @@ import db from "../db/db";
 import { foodEntriesTable, recipeEntriesTable } from "../db/schema";
 import {
   FoodEntrySchema,
+  ImportAllFromMealPlanSchema,
   ImportFromMealPlanSchema,
   RecipeEntrySchema,
 } from "../dto/mealLogs";
@@ -242,6 +243,29 @@ async function importFromMealPlan(
   });
 }
 
+
+async function deleteAllEntries(userId: number, schema: ImportAllFromMealPlanSchema) {
+  await db.transaction(async (tx) => {
+    await tx
+      .delete(foodEntriesTable)
+      .where(
+        and(
+          eq(foodEntriesTable.userId, userId),
+          eq(foodEntriesTable.logDate, schema.logDate),
+        ),
+      );
+
+    await tx
+      .delete(recipeEntriesTable)
+      .where(
+        and(
+          eq(recipeEntriesTable.userId, userId),
+          eq(recipeEntriesTable.logDate, schema.logDate),
+        ),
+      );
+  });
+}
+
 export const mealLogsRepository = {
   getFoodEntries,
   getRecipeEntries,
@@ -254,4 +278,5 @@ export const mealLogsRepository = {
   updateRecipeEntry,
   removeFoodEntry,
   removeRecipeEntry,
+  deleteAllEntries
 };

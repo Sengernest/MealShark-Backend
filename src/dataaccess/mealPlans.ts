@@ -122,7 +122,7 @@ async function getAllMealPlans(
 
 async function createMealPlan(
   mealPlan: MealPlanSchema,
-  creatorId: number,
+  creatorId?: number,
 ): Promise<MealPlan | undefined> {
   const mealPlanId = await db.transaction(async (tx) => {
     const [newMealPlan] = await tx
@@ -132,6 +132,7 @@ async function createMealPlan(
         creatorId: creatorId,
         description: mealPlan.description,
         isActive: false,
+        isSample: !creatorId,
         targetCalories: mealPlan.targetCalories,
       })
       .returning();

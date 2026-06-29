@@ -197,19 +197,23 @@ async function importAllFromMealPlan(
   userId: number,
   schema: ImportAllFromMealPlanSchema,
 ): Promise<MealLog> {
-
   const mealSlots: MealSlot[] = ["breakfast", "lunch", "dinner", "snack"];
 
   for (const mealSlot of mealSlots) {
-    await importFromMealPlan(
-      userId,
-      {
-        logDate: schema.logDate,
-        mealSlot,
-      },
-    );
+    await importFromMealPlan(userId, {
+      logDate: schema.logDate,
+      mealSlot,
+    });
   }
 
+  return await getMealLog(userId, schema.logDate);
+}
+
+async function deleteAllEntries(
+  userId: number,
+  schema: ImportAllFromMealPlanSchema,
+) {
+  await mealLogsRepository.deleteAllEntries(userId, schema);
   return await getMealLog(userId, schema.logDate);
 }
 
@@ -222,5 +226,6 @@ export const mealLogsService = {
   removeFoodEntry,
   removeRecipeEntry,
   importFromMealPlan,
-  importAllFromMealPlan
+  importAllFromMealPlan,
+  deleteAllEntries
 };

@@ -162,6 +162,7 @@ export const mealPlansTable = pgTable("meal_plans", {
   name: text().notNull(), // e.g. Bulking plan
   description: text(),
   isActive: boolean().notNull(),
+  isSample: boolean().notNull(),
   targetCalories: integer().notNull(),
 });
 
