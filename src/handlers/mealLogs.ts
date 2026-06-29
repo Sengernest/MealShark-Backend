@@ -84,3 +84,15 @@ export async function handleImportAllFromMealPlan(
   );
   res.json(entry);
 }
+
+export async function handleDeleteAllEntries(
+  req: Request,
+  res: Response,
+) {
+  const userId = Number(req.user?.id);
+  const log = await mealLogsService.deleteAllEntries(
+    userId,
+    req.body
+  );
+  res.json(log);
+}
