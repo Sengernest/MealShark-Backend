@@ -60,3 +60,27 @@ export async function handleRemoveRecipeEntry(req: Request, res: Response) {
   const entry = await mealLogsService.removeRecipeEntry(entryId, userId);
   res.json(entry);
 }
+
+export async function handleImportFromMealPlan(
+  req: Request,
+  res: Response,
+) {
+  const userId = Number(req.user?.id);
+  const entry = await mealLogsService.importFromMealPlan(
+    userId,
+    req.body
+  );
+  res.json(entry);
+}
+
+export async function handleImportAllFromMealPlan(
+  req: Request,
+  res: Response,
+) {
+  const userId = Number(req.user?.id);
+  const entry = await mealLogsService.importAllFromMealPlan(
+    userId,
+    req.body
+  );
+  res.json(entry);
+}

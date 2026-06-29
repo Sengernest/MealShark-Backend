@@ -1,8 +1,14 @@
 import { and, eq } from "drizzle-orm";
 import db from "../db/db";
 import { foodEntriesTable, recipeEntriesTable } from "../db/schema";
-import { FoodEntrySchema, RecipeEntrySchema } from "../dto/mealLogs";
-import { FoodEntry, MealSlot, RecipeEntry } from "../types";
+import {
+  FoodEntrySchema,
+  ImportFromMealPlanSchema,
+  RecipeEntrySchema,
+} from "../dto/mealLogs";
+import { FoodEntry, MealPlan, MealSlot, RecipeEntry } from "../types";
+import { BusinessError } from "../errors/errors";
+import { mealPlansRepository } from "./mealPlans";
 
 // Gets all food entries logged by the user on this date for this meal slot
 async function getFoodEntries(
@@ -170,6 +176,72 @@ async function removeRecipeEntry(entryId: number) {
     .where(eq(recipeEntriesTable.id, entryId));
 }
 
+async function importFromMealPlan(
+  userId: number,
+  schema: ImportFromMealPlanSchema,
+  activeMealPlan: MealPlan,
+) {
+  const logDate = schema.logDate;
+  const mealSlot = schema.mealSlot;
+  await db.transaction(async (tx) => {
+    // Remove existing entries in this meal slot
+    await tx
+      .delete(foodEntriesTable)
+      .where(
+        and(
+          eq(foodEntriesTable.userId, userId),
+          eq(foodEntriesTable.logDate, logDate),
+          eq(foodEntriesTable.mealSlot, mealSlot),
+        ),
+      );
+
+    await tx
+      .delete(recipeEntriesTable)
+      .where(
+        and(
+          eq(recipeEntriesTable.userId, userId),
+          eq(recipeEntriesTable.logDate, logDate),
+          eq(recipeEntriesTable.mealSlot, mealSlot),
+        ),
+      );
+
+    // Copy foods from meal plan
+    const foodItems = activeMealPlan.foodItems.filter(
+      (item) => item.mealSlot === mealSlot,
+    );
+
+    if (foodItems.length > 0) {
+      await tx.insert(foodEntriesTable).values(
+        foodItems.map((item) => ({
+          userId,
+          logDate,
+          mealSlot,
+          foodId: item.foodId,
+          unitId: item.unitId,
+          amount: item.amount,
+        })),
+      );
+    }
+
+    // Copy recipes from meal plan
+    const recipeItems = activeMealPlan.recipeItems.filter(
+      (item) => item.mealSlot === mealSlot,
+    );
+
+    if (recipeItems.length > 0) {
+      await tx.insert(recipeEntriesTable).values(
+        recipeItems.map((item) => ({
+          userId,
+          logDate,
+          mealSlot,
+          recipeId: item.recipeId,
+          servings: item.servings,
+        })),
+      );
+    }
+  });
+}
+
 export const mealLogsRepository = {
   getFoodEntries,
   getRecipeEntries,
@@ -177,6 +249,7 @@ export const mealLogsRepository = {
   getRecipeEntry,
   addFoodEntry,
   addRecipeEntry,
+  importFromMealPlan,
   updateFoodEntry,
   updateRecipeEntry,
   removeFoodEntry,

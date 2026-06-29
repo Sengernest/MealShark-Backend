@@ -104,6 +104,13 @@ async function getUserMealPlans(userId: number): Promise<MealPlan[]> {
   return getMealPlans(eq(mealPlansTable.creatorId, userId));
 }
 
+async function getActiveMealPlan(
+  userId: number,
+): Promise<MealPlan | undefined> {
+  const mealPlans = await getUserMealPlans(userId);
+  return mealPlans.find((mealPlan) => mealPlan.isActive);
+}
+
 // Get all sample meal plans together with meal plans created by a given user
 async function getAllMealPlans(
   userId: number,
@@ -235,6 +242,7 @@ export const mealPlansRepository = {
   getUserMealPlans,
   getAllMealPlans,
   getMealPlan,
+  getActiveMealPlan,
   createMealPlan,
   updateMealPlan,
   deleteMealPlan,

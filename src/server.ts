@@ -32,16 +32,23 @@ import { bodyValidator, idValidator } from "./middleware/validation";
 
 import cors from "cors";
 import dotenv from "dotenv";
-import { foodEntrySchema, recipeEntrySchema } from "./dto/mealLogs";
+import {
+  foodEntrySchema,
+  importAllFromMealPlanSchema,
+  importFromMealPlanSchema,
+  recipeEntrySchema,
+} from "./dto/mealLogs";
 import { handleGetFoods, handleSearchFoods } from "./handlers/foods";
 import {
   handleAddFoodEntry,
   handleAddRecipeEntry,
   handleGetMealLog,
+  handleImportAllFromMealPlan,
+  handleImportFromMealPlan,
   handleRemoveFoodEntry,
   handleRemoveRecipeEntry,
   handleUpdateFoodEntry,
-  handleUpdateRecipeEntry
+  handleUpdateRecipeEntry,
 } from "./handlers/mealLogs";
 import {
   handleActiveMealPlan,
@@ -164,6 +171,18 @@ app.put(
   idValidator(),
   bodyValidator(recipeEntrySchema),
   handleUpdateRecipeEntry,
+);
+app.post(
+  "/meal-logs/import",
+  requireAuth,
+  bodyValidator(importFromMealPlanSchema),
+  handleImportFromMealPlan,
+);
+app.post(
+  "/meal-logs/import-all",
+  requireAuth,
+  bodyValidator(importAllFromMealPlanSchema),
+  handleImportAllFromMealPlan,
 );
 app.delete(
   "/meal-logs/food-entries/:id",

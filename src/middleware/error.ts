@@ -15,7 +15,7 @@ export function errorHandler(
   next: NextFunction,
 ) {
   if (err instanceof NotFoundError) {
-    return res.status(404).json({ error: "Not found", message: err });
+    return res.status(404).json({ error: err.message });
   }
 
   if (err instanceof UnauthorizedError) {
