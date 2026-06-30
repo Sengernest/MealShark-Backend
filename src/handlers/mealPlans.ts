@@ -57,7 +57,7 @@ export async function handleDeleteMealPlan(req: Request, res: Response) {
   res.json({ message: `Deleted meal plan: ${mealPlanId}` });
 }
 
-export async function handleActiveMealPlan(req: Request, res: Response) {
+export async function handleActivateMealPlan(req: Request, res: Response) {
   const mealPlanId = Number(req.params.id);
   const userId = req.user?.id!;
   await mealPlansService.activateMealPlan(mealPlanId, userId);

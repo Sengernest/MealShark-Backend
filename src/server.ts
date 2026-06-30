@@ -55,8 +55,9 @@ import {
   handleUpdateRecipeEntry,
 } from "./handlers/mealLogs";
 import {
-  handleActiveMealPlan,
+  handleActivateMealPlan,
   handleCreateMealPlan,
+  handleDeactivateMealPlan,
   handleDeleteMealPlan,
   handleGetAllMealPlans,
   handleGetMealPlan,
@@ -153,7 +154,8 @@ app.put(
   handleUpdateMealPlan,
 );
 app.delete("/meal-plans/:id", requireAuth, idValidator(), handleDeleteMealPlan);
-app.patch("/meal-plans/:id", requireAuth, idValidator(), handleActiveMealPlan);
+app.post("/meal-plans/:id/active", requireAuth, idValidator(), handleActivateMealPlan);
+app.delete("/meal-plans/:id/active", requireAuth, idValidator(), handleDeactivateMealPlan)
 app.post("/meal-plans/:id/save", requireAuth, idValidator(), handleSaveMealPlan)
 app.delete("/meal-plans/:id/save", requireAuth, idValidator(), handleUnsaveMealPlan)
 
