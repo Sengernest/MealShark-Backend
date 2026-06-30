@@ -25,6 +25,12 @@ export async function handleGetAllMealPlans(req: Request, res: Response) {
   res.json(mealPlans);
 }
 
+export async function handleGetSavedMealPlans(req: Request, res: Response) {
+  const userId = req.user?.id!
+  const mealPlans = await mealPlansService.getSavedMealPlans(userId)
+  res.json(mealPlans)
+}
+
 export async function handleCreateMealPlan(req: Request, res: Response) {
   const userId = req.user?.id!;
   const mealPlan = await mealPlansService.createMealPlan(req.body, userId);
@@ -49,10 +55,23 @@ export async function handleDeleteMealPlan(req: Request, res: Response) {
   res.json({ message: `Deleted meal plan: ${mealPlanId}` });
 }
 
-
 export async function handleActiveMealPlan(req: Request, res: Response) {
   const mealPlanId = Number(req.params.id);
   const userId = req.user?.id!;
   const mealPlan = await mealPlansService.activateMealPlan(mealPlanId, userId);
-  res.json(mealPlan); 
+  res.json(mealPlan);
+}
+
+export async function handleSaveMealPlan(req: Request, res: Response) {
+  const mealPlanId = Number(req.params.id);
+  const userId = req.user?.id!;
+  await mealPlansService.saveMealPlan(mealPlanId, userId);
+  res.json({ message: `Saved meal plan: ${mealPlanId}` });
+}
+
+export async function handleUnsaveMealPlan(req: Request, res: Response) {
+  const mealPlanId = Number(req.params.id);
+  const userId = req.user?.id!;
+  await mealPlansService.unsaveMealPlan(mealPlanId, userId);
+  res.json({ message: `Unsaved meal plan: ${mealPlanId}` });
 }

@@ -61,7 +61,10 @@ import {
   handleGetAllMealPlans,
   handleGetMealPlan,
   handleGetSampleMealPlans,
+  handleGetSavedMealPlans,
   handleGetUserMealPlans,
+  handleSaveMealPlan,
+  handleUnsaveMealPlan,
   handleUpdateMealPlan,
 } from "./handlers/mealPlans";
 import { errorHandler } from "./middleware/error";
@@ -134,6 +137,7 @@ app.delete("/recipes/:id/save", requireAuth, idValidator(), handleUnsaveRecipe)
 app.get("/meal-plans", requireAuth, handleGetAllMealPlans);
 app.get("/meal-plans/samples", handleGetSampleMealPlans);
 app.get("/me/meal-plans", requireAuth, handleGetUserMealPlans);
+app.get("/meal-plans/saved", requireAuth, handleGetSavedMealPlans)
 app.get("/meal-plans/:id", requireAuth, idValidator(), handleGetMealPlan);
 app.post(
   "/meal-plans",
@@ -150,6 +154,8 @@ app.put(
 );
 app.delete("/meal-plans/:id", requireAuth, idValidator(), handleDeleteMealPlan);
 app.patch("/meal-plans/:id", requireAuth, idValidator(), handleActiveMealPlan);
+app.post("/meal-plans/:id/save", requireAuth, idValidator(), handleSaveMealPlan)
+app.delete("/meal-plans/:id/save", requireAuth, idValidator(), handleUnsaveMealPlan)
 
 // Meal logs
 app.get("/meal-logs", requireAuth, handleGetMealLog); // ?date=

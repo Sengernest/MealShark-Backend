@@ -68,7 +68,10 @@ function getMealPlanMeal(
   };
 }
 
-async function getMealPlan(mealPlanId: number): Promise<MealPlanView> {
+async function getMealPlan(
+  mealPlanId: number,
+  userId?: number,
+): Promise<MealPlanView> {
   const mealPlan = await mealPlansRepository.getMealPlan(mealPlanId);
   if (!mealPlan) {
     throw new NotFoundError();
@@ -81,6 +84,8 @@ async function getMealPlan(mealPlanId: number): Promise<MealPlanView> {
 
   const { foodItems, recipeItems, ...baseMealPlan } = mealPlan;
 
+  const isSaved = userId ? await isSavedByUser(mealPlanId, userId) : false;
+
   return {
     ...baseMealPlan,
     breakfast,
@@ -88,24 +93,39 @@ async function getMealPlan(mealPlanId: number): Promise<MealPlanView> {
     dinner,
     snack,
     nutrition: roundNutrition(sumNutrition(breakfast, lunch, dinner, snack)),
+    isSaved,
   };
 }
 
-async function getSampleMealPlans() {
+async function isSavedByUser(
+  mealPlanId: number,
+  userId: number,
+): Promise<boolean> {
+  const savedMealPlans =
+    await mealPlansRepository.getUserSavedMealPlans(userId);
+  const savedMealPlanIds = new Set(
+    savedMealPlans.map((mealPlan) => mealPlan.id),
+  );
+  return savedMealPlanIds.has(mealPlanId);
+}
+
+async function getSampleMealPlans(): Promise<MealPlanView[]> {
   const mealPlans = await mealPlansRepository.getSampleMealPlans();
   return Promise.all(mealPlans.map((mealPlan) => getMealPlan(mealPlan.id)));
 }
 
-async function getUserMealPlans(userId: number) {
+async function getUserMealPlans(userId: number): Promise<MealPlanView[]> {
   const mealPlans = await mealPlansRepository.getUserMealPlans(userId);
   return Promise.all(mealPlans.map((mealPlan) => getMealPlan(mealPlan.id)));
 }
 
-async function getAllMealPlans(userId: number) {
+async function getAllMealPlans(userId: number): Promise<MealPlanView[]> {
   const mealPlans = await mealPlansRepository.getAllMealPlans(userId);
-  if (!mealPlans) {
-    throw new NotFoundError();
-  }
+  return Promise.all(mealPlans.map((mealPlan) => getMealPlan(mealPlan.id)));
+}
+
+async function getSavedMealPlans(userId: number): Promise<MealPlanView[]> {
+  const mealPlans = await mealPlansRepository.getUserSavedMealPlans(userId);
   return Promise.all(mealPlans.map((mealPlan) => getMealPlan(mealPlan.id)));
 }
 
@@ -167,13 +187,25 @@ async function activateMealPlan(
   const mealPlan = mealPlansRepository.activateMealPlan(mealPlanId, userId);
   return mealPlan;
 }
+
+async function saveMealPlan(mealPlanId: number, userId: number) {
+  await mealPlansRepository.saveMealPlan(mealPlanId, userId);
+}
+
+async function unsaveMealPlan(mealPlanId: number, userId: number) {
+  await mealPlansRepository.unsaveMealPlan(mealPlanId, userId);
+}
+
 export const mealPlansService = {
   getSampleMealPlans,
   getUserMealPlans,
   getMealPlan,
+  getSavedMealPlans,
   getAllMealPlans,
   createMealPlan,
   updateMealPlan,
   deleteMealPlan,
   activateMealPlan,
+  saveMealPlan,
+  unsaveMealPlan,
 };

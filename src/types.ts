@@ -188,11 +188,12 @@ export type MealPlan = typeof mealPlansTable.$inferSelect & {
 };
 
 export type MealPlanView = typeof mealPlansTable.$inferSelect & {
-  nutrition: Nutrition;
   breakfast: MealPlanMealWithNutrition;
   lunch: MealPlanMealWithNutrition;
   dinner: MealPlanMealWithNutrition;
   snack: MealPlanMealWithNutrition;
+  nutrition: Nutrition;
+  isSaved: boolean
 };
 
 export type NutritionGoals = typeof nutritionGoalsTable.$inferSelect;

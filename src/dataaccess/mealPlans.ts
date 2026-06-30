@@ -4,6 +4,7 @@ import {
   foodsToMealPlansTable,
   mealPlansTable,
   recipesToMealPlansTable,
+  savedMealPlansTable,
 } from "../db/schema";
 import { MealPlanSchema } from "../dto/mealPlans";
 import { MealPlan } from "../types";
@@ -112,12 +113,59 @@ async function getActiveMealPlan(
 }
 
 // Get all sample meal plans together with meal plans created by a given user
-async function getAllMealPlans(
-  userId: number,
-): Promise<MealPlan[] | undefined> {
+async function getAllMealPlans(userId: number): Promise<MealPlan[]> {
   return getMealPlans(
     or(eq(mealPlansTable.creatorId, userId), isNull(mealPlansTable.creatorId))!,
   );
+}
+
+async function getUserSavedMealPlans(userId: number): Promise<MealPlan[]> {
+  const savedMealPlans = await db.query.savedMealPlansTable.findMany({
+    where: eq(savedMealPlansTable.userId, userId),
+    with: {
+      mealPlan: {
+        with: {
+          recipeItems: {
+            with: {
+              recipe: {
+                with: {
+                  ingredients: {
+                    with: {
+                      food: {
+                        with: {
+                          units: {
+                            with: {
+                              unit: true,
+                            },
+                          },
+                        },
+                      },
+                      unit: true,
+                    },
+                  },
+                },
+              },
+            },
+          },
+          foodItems: {
+            with: {
+              food: {
+                with: {
+                  units: {
+                    with: {
+                      unit: true,
+                    },
+                  },
+                },
+              },
+              unit: true,
+            },
+          },
+        },
+      },
+    },
+  });
+  return savedMealPlans.map((savedMealPlan) => savedMealPlan.mealPlan);
 }
 
 async function createMealPlan(
@@ -238,14 +286,35 @@ async function activateMealPlan(
   return getMealPlan(mealPlanId);
 }
 
+async function saveMealPlan(mealPlanId: number, userId: number) {
+  return db
+    .insert(savedMealPlansTable)
+    .values({ mealPlanId, userId })
+    .onConflictDoNothing();
+}
+
+async function unsaveMealPlan(mealPlanId: number, userId: number) {
+  return db
+    .delete(savedMealPlansTable)
+    .where(
+      and(
+        eq(savedMealPlansTable.mealPlanId, mealPlanId),
+        eq(savedMealPlansTable.userId, userId),
+      ),
+    );
+}
+
 export const mealPlansRepository = {
   getSampleMealPlans,
   getUserMealPlans,
   getAllMealPlans,
+  getUserSavedMealPlans,
   getMealPlan,
   getActiveMealPlan,
   createMealPlan,
   updateMealPlan,
   deleteMealPlan,
   activateMealPlan,
+  saveMealPlan,
+  unsaveMealPlan,
 };
