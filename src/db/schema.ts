@@ -161,7 +161,6 @@ export const mealPlansTable = pgTable("meal_plans", {
   creatorId: integer("creator_id").references(() => usersTable.id), // Null if sample meal
   name: text().notNull(), // e.g. Bulking plan
   description: text(),
-  isActive: boolean().notNull(),
   isSample: boolean().notNull(),
   targetCalories: integer().notNull(),
 });
@@ -260,6 +259,33 @@ export const savedMealPlansRelations = relations(
     }),
     mealPlan: one(mealPlansTable, {
       fields: [savedMealPlansTable.mealPlanId],
+      references: [mealPlansTable.id],
+    }),
+  }),
+);
+
+export const activeMealPlansTable = pgTable(
+  "active_meal_plans",
+  {
+    userId: integer("user_id")
+      .references(() => usersTable.id)
+      .notNull(),
+    mealPlanId: integer("meal_plan_id")
+      .references(() => mealPlansTable.id)
+      .notNull(),
+  },
+  (table) => [primaryKey({ columns: [table.userId, table.mealPlanId] })],
+);
+
+export const activeMealPlansRelations = relations(
+  activeMealPlansTable,
+  ({ one }) => ({
+    user: one(usersTable, {
+      fields: [activeMealPlansTable.userId],
+      references: [usersTable.id],
+    }),
+    mealPlan: one(mealPlansTable, {
+      fields: [activeMealPlansTable.mealPlanId],
       references: [mealPlansTable.id],
     }),
   }),

@@ -1,6 +1,7 @@
 import { and, eq, inArray, isNull, or, SQL } from "drizzle-orm";
 import db from "../db/db";
 import {
+  activeMealPlansTable,
   foodsToMealPlansTable,
   mealPlansTable,
   recipesToMealPlansTable,
@@ -105,18 +106,21 @@ async function getUserMealPlans(userId: number): Promise<MealPlan[]> {
   return getMealPlans(eq(mealPlansTable.creatorId, userId));
 }
 
-async function getActiveMealPlan(
-  userId: number,
-): Promise<MealPlan | undefined> {
-  const mealPlans = await getUserMealPlans(userId);
-  return mealPlans.find((mealPlan) => mealPlan.isActive);
-}
-
 // Get all sample meal plans together with meal plans created by a given user
 async function getAllMealPlans(userId: number): Promise<MealPlan[]> {
   return getMealPlans(
     or(eq(mealPlansTable.creatorId, userId), isNull(mealPlansTable.creatorId))!,
   );
+}
+
+async function getActiveMealPlan(
+  userId: number,
+): Promise<MealPlan | undefined> {
+  const activeMealPlan = await db.query.activeMealPlansTable.findFirst({
+    where: eq(activeMealPlansTable.userId, userId),
+  });
+  if (!activeMealPlan) return undefined;
+  return getMealPlan(activeMealPlan.mealPlanId);
 }
 
 async function getUserSavedMealPlans(userId: number): Promise<MealPlan[]> {
@@ -140,7 +144,6 @@ async function createMealPlan(
         name: mealPlan.name,
         creatorId: creatorId,
         description: mealPlan.description,
-        isActive: false,
         isSample: !creatorId,
         targetCalories: mealPlan.targetCalories,
       })
@@ -221,30 +224,25 @@ async function deleteMealPlan(mealPlanId: number) {
     .where(eq(mealPlansTable.id, mealPlanId));
 }
 
-async function activateMealPlan(
-  mealPlanId: number,
-  userId: number,
-): Promise<MealPlan | undefined> {
-  await db.transaction(async (tx) => {
-    // Deactivate all user's meal plans
-    await tx
-      .update(mealPlansTable)
-      .set({ isActive: false })
-      .where(eq(mealPlansTable.creatorId, userId));
+async function activateMealPlan(mealPlanId: number, userId: number) {
+  await db.insert(activeMealPlansTable).values({ mealPlanId, userId });
+}
 
-    // Activate the selected meal plan
-    await tx
-      .update(mealPlansTable)
-      .set({ isActive: true })
-      .where(
-        and(
-          eq(mealPlansTable.id, mealPlanId),
-          eq(mealPlansTable.creatorId, userId),
-        ),
-      );
-  });
+async function deactivateMealPlan(mealPlanId: number, userId: number) {
+  await db
+    .delete(activeMealPlansTable)
+    .where(
+      and(
+        eq(activeMealPlansTable.mealPlanId, mealPlanId),
+        eq(activeMealPlansTable.userId, userId),
+      ),
+    );
+}
 
-  return getMealPlan(mealPlanId);
+async function deactivateAllMealPlans(userId: number) {
+  await db
+    .delete(activeMealPlansTable)
+    .where(and(eq(activeMealPlansTable.userId, userId)));
 }
 
 async function saveMealPlan(mealPlanId: number, userId: number) {
@@ -276,6 +274,8 @@ export const mealPlansRepository = {
   updateMealPlan,
   deleteMealPlan,
   activateMealPlan,
+  deactivateMealPlan,
+  deactivateAllMealPlans,
   saveMealPlan,
   unsaveMealPlan,
 };

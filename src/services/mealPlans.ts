@@ -111,22 +111,30 @@ async function isSavedByUser(
 
 async function getSampleMealPlans(userId: number): Promise<MealPlanView[]> {
   const mealPlans = await mealPlansRepository.getSampleMealPlans();
-  return Promise.all(mealPlans.map((mealPlan) => getMealPlan(mealPlan.id, userId)));
+  return Promise.all(
+    mealPlans.map((mealPlan) => getMealPlan(mealPlan.id, userId)),
+  );
 }
 
 async function getUserMealPlans(userId: number): Promise<MealPlanView[]> {
   const mealPlans = await mealPlansRepository.getUserMealPlans(userId);
-  return Promise.all(mealPlans.map((mealPlan) => getMealPlan(mealPlan.id, userId)));
+  return Promise.all(
+    mealPlans.map((mealPlan) => getMealPlan(mealPlan.id, userId)),
+  );
 }
 
 async function getAllMealPlans(userId: number): Promise<MealPlanView[]> {
   const mealPlans = await mealPlansRepository.getAllMealPlans(userId);
-  return Promise.all(mealPlans.map((mealPlan) => getMealPlan(mealPlan.id, userId)));
+  return Promise.all(
+    mealPlans.map((mealPlan) => getMealPlan(mealPlan.id, userId)),
+  );
 }
 
 async function getSavedMealPlans(userId: number): Promise<MealPlanView[]> {
   const mealPlans = await mealPlansRepository.getUserSavedMealPlans(userId);
-  return Promise.all(mealPlans.map((mealPlan) => getMealPlan(mealPlan.id, userId)));
+  return Promise.all(
+    mealPlans.map((mealPlan) => getMealPlan(mealPlan.id, userId)),
+  );
 }
 
 async function createMealPlan(schema: MealPlanSchema, userId: number) {
@@ -180,12 +188,15 @@ async function deleteMealPlan(mealPlanId: number, userId: number) {
   return mealPlansRepository.deleteMealPlan(mealPlanId);
 }
 
-async function activateMealPlan(
-  mealPlanId: number,
-  userId: number,
-): Promise<MealPlan | undefined> {
-  const mealPlan = mealPlansRepository.activateMealPlan(mealPlanId, userId);
-  return mealPlan;
+async function activateMealPlan(mealPlanId: number, userId: number) {
+  // Deactivate all meal plans
+  await mealPlansRepository.deactivateAllMealPlans(userId);
+  // Activate selected plan
+  await mealPlansRepository.activateMealPlan(mealPlanId, userId);
+}
+
+async function deactivateMealPlan(mealPlanId: number, userId: number) {
+  await mealPlansRepository.deactivateMealPlan(mealPlanId, userId);
 }
 
 async function saveMealPlan(mealPlanId: number, userId: number) {
@@ -206,6 +217,7 @@ export const mealPlansService = {
   updateMealPlan,
   deleteMealPlan,
   activateMealPlan,
+  deactivateMealPlan,
   saveMealPlan,
   unsaveMealPlan,
 };

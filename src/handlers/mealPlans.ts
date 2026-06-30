@@ -28,9 +28,9 @@ export async function handleGetAllMealPlans(req: Request, res: Response) {
 }
 
 export async function handleGetSavedMealPlans(req: Request, res: Response) {
-  const userId = req.user?.id!
-  const mealPlans = await mealPlansService.getSavedMealPlans(userId)
-  res.json(mealPlans)
+  const userId = req.user?.id!;
+  const mealPlans = await mealPlansService.getSavedMealPlans(userId);
+  res.json(mealPlans);
 }
 
 export async function handleCreateMealPlan(req: Request, res: Response) {
@@ -60,8 +60,15 @@ export async function handleDeleteMealPlan(req: Request, res: Response) {
 export async function handleActiveMealPlan(req: Request, res: Response) {
   const mealPlanId = Number(req.params.id);
   const userId = req.user?.id!;
-  const mealPlan = await mealPlansService.activateMealPlan(mealPlanId, userId);
-  res.json(mealPlan);
+  await mealPlansService.activateMealPlan(mealPlanId, userId);
+  res.json({ message: `Activated meal plan: ${mealPlanId}` });
+}
+
+export async function handleDeactivateMealPlan(req: Request, res: Response) {
+  const mealPlanId = Number(req.params.id);
+  const userId = req.user?.id!;
+  await mealPlansService.deactivateMealPlan(mealPlanId, userId);
+  res.json({ message: `Deactivated meal plan: ${mealPlanId}` });
 }
 
 export async function handleSaveMealPlan(req: Request, res: Response) {
