@@ -194,6 +194,7 @@ export type MealPlanView = typeof mealPlansTable.$inferSelect & {
   snack: MealPlanMealWithNutrition;
   nutrition: Nutrition;
   isSaved: boolean
+  isActive: boolean
 };
 
 export type NutritionGoals = typeof nutritionGoalsTable.$inferSelect;

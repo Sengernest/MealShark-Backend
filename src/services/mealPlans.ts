@@ -85,6 +85,7 @@ async function getMealPlan(
   const { foodItems, recipeItems, ...baseMealPlan } = mealPlan;
 
   const isSaved = userId ? await isSavedByUser(mealPlanId, userId) : false;
+  const isActive = userId ? await isActivatedByUser(mealPlanId, userId) : false;
 
   return {
     ...baseMealPlan,
@@ -94,6 +95,7 @@ async function getMealPlan(
     snack,
     nutrition: roundNutrition(sumNutrition(breakfast, lunch, dinner, snack)),
     isSaved,
+    isActive,
   };
 }
 
@@ -107,6 +109,14 @@ async function isSavedByUser(
     savedMealPlans.map((mealPlan) => mealPlan.id),
   );
   return savedMealPlanIds.has(mealPlanId);
+}
+
+async function isActivatedByUser(
+  mealPlanId: number,
+  userId: number,
+): Promise<boolean> {
+  const activeMealPlan = await mealPlansRepository.getActiveMealPlan(userId);
+  return activeMealPlan?.id === mealPlanId;
 }
 
 async function getSampleMealPlans(userId: number): Promise<MealPlanView[]> {
