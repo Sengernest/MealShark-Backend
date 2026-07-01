@@ -7,6 +7,8 @@ import {
   Meal,
   Nutrition,
   Recipe,
+  RecipeEntry,
+  RecipeEntryWithNutrition,
   RecipeItem,
   RecipeItemWithNutrition,
   RecipeWithNutrition,
@@ -28,7 +30,7 @@ export function roundNutrition(nutrition: Nutrition): Nutrition {
 }
 
 // Calculate nutrition per serving given total nutrition
-function perServing(nutrition: Nutrition, servings: number): Nutrition {
+export function perServing(nutrition: Nutrition, servings: number): Nutrition {
   return {
     calories: nutrition.calories / servings,
     macros: {
@@ -112,21 +114,5 @@ export function recipeToWithNutrition(recipe: Recipe): RecipeWithNutrition {
     ...recipe,
     ingredients: ingredientsWithNutrition,
     nutrition,
-  };
-}
-
-// Compute nutrition of recipe based on servings
-export function recipeItemToWithNutrition(
-  recipeItem: RecipeItem,
-): RecipeItemWithNutrition {
-  const recipeWithNutrition = recipeToWithNutrition(recipeItem.recipe);
-  const totalNutrition = multiplyNutrition(
-    recipeWithNutrition.nutrition,
-    recipeItem.servings,
-  );
-  return {
-    ...recipeItem,
-    recipe: recipeWithNutrition,
-    nutrition: roundNutrition(totalNutrition),
   };
 }

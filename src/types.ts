@@ -13,6 +13,7 @@ import {
   mealSlotEnum,
   recipesToMealPlansTable,
   savedRecipesTable,
+  foodsToRecipeEntriesTable,
 } from "./db/schema";
 
 export type User = typeof usersTable.$inferSelect;
@@ -69,7 +70,7 @@ export type FoodItemWithNutrition = FoodItem & {
   nutrition: Nutrition;
 };
 
-export type Ingredient = typeof foodsToRecipesTable.$inferSelect & {
+export type Ingredient = Omit<typeof foodsToRecipesTable.$inferSelect, "recipeId"> & {
   food: Food;
   unit: Unit;
 };
@@ -88,8 +89,8 @@ export type RecipeWithNutrition = typeof recipesTable.$inferSelect & {
 };
 
 export type RecipeView = RecipeWithNutrition & {
-  isSaved: boolean
-}
+  isSaved: boolean;
+};
 
 export type RecipeItem = {
   recipeId: number;
@@ -112,13 +113,23 @@ export type FoodEntryWithNutrition = FoodEntry & {
   nutrition: Nutrition;
 };
 
+export type RecipeEntryIngredient =
+  typeof foodsToRecipeEntriesTable.$inferSelect & {
+    food: Food;
+    unit: Unit;
+  };
+
+export type RecipeEntryIngredientWithNutrition = RecipeEntryIngredient & {
+  nutrition: Nutrition;
+};
+
 export type RecipeEntry = typeof recipeEntriesTable.$inferSelect & {
-  recipe: Recipe;
+  ingredients: RecipeEntryIngredient[];
 };
 
 export type RecipeEntryWithNutrition =
   typeof recipeEntriesTable.$inferSelect & {
-    recipe: RecipeWithNutrition;
+    ingredients: RecipeEntryIngredientWithNutrition[];
     nutrition: Nutrition;
   };
 
@@ -193,8 +204,8 @@ export type MealPlanView = typeof mealPlansTable.$inferSelect & {
   dinner: MealPlanMealWithNutrition;
   snack: MealPlanMealWithNutrition;
   nutrition: Nutrition;
-  isSaved: boolean
-  isActive: boolean
+  isSaved: boolean;
+  isActive: boolean;
 };
 
 export type NutritionGoals = typeof nutritionGoalsTable.$inferSelect;

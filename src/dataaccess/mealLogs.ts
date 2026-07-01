@@ -69,18 +69,14 @@ async function getRecipeEntries(
       eq(foodEntriesTable.mealSlot, mealSlot),
     ),
     with: {
-      recipe: {
+      ingredients: {
         with: {
-          ingredients: {
+          unit: true,
+          food: {
             with: {
-              unit: true,
-              food: {
+              units: {
                 with: {
-                  units: {
-                    with: {
-                      unit: true,
-                    },
-                  },
+                  unit: true,
                 },
               },
             },
@@ -95,18 +91,14 @@ async function getRecipeEntry(id: number): Promise<RecipeEntry | undefined> {
   return db.query.recipeEntriesTable.findFirst({
     where: eq(foodEntriesTable.id, id),
     with: {
-      recipe: {
+      ingredients: {
         with: {
-          ingredients: {
+          unit: true,
+          food: {
             with: {
-              unit: true,
-              food: {
+              units: {
                 with: {
-                  units: {
-                    with: {
-                      unit: true,
-                    },
-                  },
+                  unit: true,
                 },
               },
             },
@@ -133,10 +125,12 @@ async function addFoodEntry(
 async function addRecipeEntry(
   userId: number,
   schema: RecipeEntrySchema,
+  recipeName: string,
+  recipeServings: number,
 ): Promise<RecipeEntry | undefined> {
   const [recipeEntry] = await db
     .insert(recipeEntriesTable)
-    .values({ ...schema, userId })
+    .values({ ...schema, userId, recipeName, recipeServings })
     .returning();
   return getRecipeEntry(recipeEntry.id);
 }
@@ -237,14 +231,18 @@ async function importFromMealPlan(
           mealSlot,
           recipeId: item.recipeId,
           servings: item.servings,
+          recipeName: item.recipe.name,
+          recipeServings: item.recipe.servings,
         })),
       );
     }
   });
 }
 
-
-async function deleteAllEntries(userId: number, schema: ImportAllFromMealPlanSchema) {
+async function deleteAllEntries(
+  userId: number,
+  schema: ImportAllFromMealPlanSchema,
+) {
   await db.transaction(async (tx) => {
     await tx
       .delete(foodEntriesTable)
@@ -278,5 +276,5 @@ export const mealLogsRepository = {
   updateRecipeEntry,
   removeFoodEntry,
   removeRecipeEntry,
-  deleteAllEntries
+  deleteAllEntries,
 };

@@ -87,7 +87,7 @@ export const foodsToRecipesTable = pgTable(
     foreignKey({
       columns: [table.foodId, table.unitId],
       foreignColumns: [foodUnitsTable.foodId, foodUnitsTable.unitId],
-    }),
+    }), // A recipe cannot have multiple instances of a food with the same unit
   ],
 );
 
@@ -325,19 +325,65 @@ export const recipeEntriesTable = pgTable("recipe_entries", {
     .notNull(),
   logDate: date("log_date", { mode: "string" }).notNull(),
   mealSlot: mealSlotEnum("meal_slot").notNull(),
-  recipeId: integer("recipe_id")
-    .references(() => recipesTable.id)
-    .notNull(),
+  recipeId: integer("recipe_id").references(() => recipesTable.id), // Can be null if recipe is subsequently deleted
   servings: integer().notNull(),
+
+  // Snapshot of original recipe
+  recipeName: text().notNull(),
+  recipeServings: integer().notNull(),
 });
+
+// Snapshot of original recipe ingredients
+export const foodsToRecipeEntriesTable = pgTable(
+  "foods_to_recipe_entries",
+  {
+    foodId: integer("food_id")
+      .references(() => foodsTable.id)
+      .notNull(),
+    recipeEntryId: integer("recipe_entry_id").references(
+      () => recipeEntriesTable.id,
+      { onDelete: "cascade" },
+    ),
+    amount: numeric({ mode: "number" }).notNull(),
+    unitId: integer("unit_id")
+      .references(() => unitsTable.id)
+      .notNull(),
+  },
+  (table) => [
+    primaryKey({ columns: [table.foodId, table.recipeEntryId] }),
+    foreignKey({
+      columns: [table.foodId, table.unitId],
+      foreignColumns: [foodUnitsTable.foodId, foodUnitsTable.unitId],
+    }), // A recipe entry cannot have multiple instances of a food with the same unit
+  ],
+);
+
+export const foodsToRecipeEntriesRelations = relations(
+  foodsToRecipeEntriesTable,
+  ({ one }) => ({
+    food: one(foodsTable, {
+      fields: [foodsToRecipeEntriesTable.foodId],
+      references: [foodsTable.id],
+    }),
+    recipeEntry: one(recipeEntriesTable, {
+      fields: [foodsToRecipeEntriesTable.recipeEntryId],
+      references: [recipeEntriesTable.id],
+    }),
+    unit: one(unitsTable, {
+      fields: [foodsToRecipeEntriesTable.unitId],
+      references: [unitsTable.id],
+    }),
+  }),
+);
 
 export const recipeEntriesRelations = relations(
   recipeEntriesTable,
-  ({ one }) => ({
+  ({ one, many }) => ({
     recipe: one(recipesTable, {
       fields: [recipeEntriesTable.recipeId],
       references: [recipesTable.id],
     }),
+    ingredients: many(foodsToRecipeEntriesTable),
   }),
 );
 

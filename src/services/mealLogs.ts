@@ -1,11 +1,11 @@
 import { mealLogsRepository } from "../dataaccess/mealLogs";
 import { mealPlansRepository } from "../dataaccess/mealPlans";
+import { recipesRepository } from "../dataaccess/recipes";
 import {
   FoodEntrySchema,
   ImportAllFromMealPlanSchema,
   ImportFromMealPlanSchema,
   RecipeEntrySchema,
-  recipeEntrySchema,
 } from "../dto/mealLogs";
 import { NotFoundError, UnauthorizedError } from "../errors/errors";
 import {
@@ -18,8 +18,8 @@ import {
 } from "../types";
 import {
   foodItemToWithNutrition,
-  multiplyNutrition,
-  recipeToWithNutrition,
+  perServing,
+  roundNutrition,
   sumNutrition,
 } from "./nutrition";
 
@@ -60,14 +60,9 @@ async function getMealEntry(
     nutrition: foodItemToWithNutrition(foodEntry).nutrition,
   }));
 
-  const recipeEntriesWithNutrition = recipeEntries.map((recipeEntry) => {
-    const recipe = recipeToWithNutrition(recipeEntry.recipe);
-    return {
-      ...recipeEntry,
-      recipe,
-      nutrition: multiplyNutrition(recipe.nutrition, recipeEntry.servings),
-    };
-  });
+  const recipeEntriesWithNutrition = recipeEntries.map((recipeEntry) =>
+    recipeEntryToWithNutrition(recipeEntry),
+  );
 
   return {
     foodEntries: foodEntriesWithNutrition,
@@ -76,6 +71,27 @@ async function getMealEntry(
       ...foodEntriesWithNutrition,
       ...recipeEntriesWithNutrition,
     ),
+  };
+}
+
+// Compute nutrition of recipe based on servings
+export function recipeEntryToWithNutrition(
+  recipeEntry: RecipeEntry,
+): RecipeEntryWithNutrition {
+  const ingredientsWithNutrition = recipeEntry.ingredients.map(
+    (ingredient) => ({
+      ...ingredient,
+      nutrition: foodItemToWithNutrition(ingredient).nutrition,
+    }),
+  );
+  const ingredientsNutrition = sumNutrition(...ingredientsWithNutrition);
+  const nutrition = roundNutrition(
+    perServing(ingredientsNutrition, recipeEntry.servings),
+  );
+  return {
+    ...recipeEntry,
+    ingredients: ingredientsWithNutrition,
+    nutrition,
   };
 }
 
@@ -94,7 +110,17 @@ async function addRecipeEntry(
   schema: RecipeEntrySchema,
   userId: number,
 ): Promise<RecipeEntry> {
-  const recipeEntry = await mealLogsRepository.addRecipeEntry(userId, schema);
+  // Get original recipe for snapshot
+  const recipe = await recipesRepository.getRecipe(schema.recipeId);
+  if (!recipe) {
+    throw new NotFoundError();
+  }
+  const recipeEntry = await mealLogsRepository.addRecipeEntry(
+    userId,
+    schema,
+    recipe.name,
+    recipe.servings,
+  );
   if (!recipeEntry) {
     throw new NotFoundError();
   }
@@ -227,5 +253,5 @@ export const mealLogsService = {
   removeRecipeEntry,
   importFromMealPlan,
   importAllFromMealPlan,
-  deleteAllEntries
+  deleteAllEntries,
 };
