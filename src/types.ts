@@ -92,12 +92,6 @@ export type RecipeView = RecipeWithNutrition & {
   isSaved: boolean;
 };
 
-export type RecipeItem = {
-  recipeId: number;
-  recipe: Recipe;
-  servings: number;
-};
-
 export type RecipeItemWithNutrition = {
   recipeId: number;
   recipe: RecipeWithNutrition;
@@ -156,11 +150,6 @@ export type MealSlot = (typeof mealSlotEnum.enumValues)[number];
 
 export type Consumable = {
   nutrition: Nutrition;
-};
-
-export type Meal = {
-  foodItems: FoodItem[];
-  recipeItems: RecipeItem[];
 };
 
 export type MealPlanFood = typeof foodsToMealPlansTable.$inferSelect & {
