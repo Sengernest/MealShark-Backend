@@ -19,6 +19,7 @@ import {
 } from "../types";
 import {
   foodItemToWithNutrition,
+  multiplyNutrition,
   perServing,
   roundNutrition,
   sumNutrition,
@@ -61,7 +62,9 @@ async function getMealEntry(
     nutrition: foodItemToWithNutrition(foodEntry).nutrition,
   }));
 
-  const recipeEntriesWithNutrition = recipeEntries.map(recipeEntryToWithNutrition);
+  const recipeEntriesWithNutrition = recipeEntries.map(
+    recipeEntryToWithNutrition,
+  );
 
   return {
     foodEntries: foodEntriesWithNutrition,
@@ -85,7 +88,10 @@ export function recipeEntryToWithNutrition(
   );
   const ingredientsNutrition = sumNutrition(...ingredientsWithNutrition);
   const nutrition = roundNutrition(
-    perServing(ingredientsNutrition, recipeEntry.servings),
+    multiplyNutrition(
+      perServing(ingredientsNutrition, recipeEntry.recipeServings),
+      recipeEntry.servings,
+    ),
   );
   return {
     ...recipeEntry,
@@ -119,7 +125,7 @@ async function addRecipeEntry(
     schema,
     recipe.name,
     recipe.servings,
-    recipe.ingredients
+    recipe.ingredients,
   );
   if (!recipeEntry) {
     throw new NotFoundError();
